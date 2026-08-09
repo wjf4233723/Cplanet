@@ -195,6 +195,7 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
 <base target="_blank">
 <base target="_blank">
 <base target="_blank">
+<base target="_blank">
 </head>
 <body>
 <script>
@@ -1753,7 +1754,8 @@ const UI = {
       </div>
       <div id="notes-list">
         ${notes.slice().reverse().map(n => {
-          return '<div class="card" style="cursor:pointer;border-left:3px solid var(--accent)" onclick="App.openNote(' + n.id + ')"><div style="font-weight:600;font-size:16px">' + n.title + '</div><div style="font-size:12px;color:var(--text2);margin-top:6px">' + n.createdAt + ' · ' + n.tags.map(t=>'<span class="tag tag-info">' + t + '</span>').join('') + '</div><div style="margin-top:10px;font-size:13px;color:var(--text2);overflow:hidden;white-space:nowrap;text-overflow:ellipsis">' + UI.stripMarkdown(n.content).substring(0, 100) + '...</div></div>';
+          const privacyLabel = n.private !== false ? '<span class="tag tag-primary" style="margin-left:6px">🔒 私有</span>' : '<span class="tag tag-success" style="margin-left:6px">🌐 公开</span>';
+          return '<div class="card" style="cursor:pointer;border-left:3px solid var(--accent)" onclick="App.openNote(' + n.id + ')"><div style="font-weight:600;font-size:16px;display:flex;align-items:center;flex-wrap:wrap">' + n.title + privacyLabel + '</div><div style="font-size:12px;color:var(--text2);margin-top:6px">' + n.createdAt + ' · ' + n.tags.map(t=>'<span class="tag tag-info">' + t + '</span>').join('') + '</div><div style="margin-top:10px;font-size:13px;color:var(--text2);overflow:hidden;white-space:nowrap;text-overflow:ellipsis">' + UI.stripMarkdown(n.content).substring(0, 100) + '...</div></div>';
         }).join('') || '<div class="card" style="text-align:center;padding:60px;color:var(--text2)"><div style="font-size:48px;margin-bottom:12px">📝</div><div>暂无笔记，点击右上角新建</div></div>'}
       </div>`;
   },
@@ -1789,6 +1791,10 @@ const UI = {
       <div style="margin-bottom:16px">
         <input type="text" class="form-control2" id="note-title" placeholder="笔记标题" value="${note ? note.title : ''}" style="margin-bottom:12px">
         <input type="text" class="form-control2" id="note-tags" placeholder="标签（空格分隔）" value="${note ? note.tags.join(' ') : ''}">
+        <label style="display:flex;align-items:center;gap:10px;margin-top:12px;cursor:pointer;padding:10px 14px;background:rgba(255,255,255,.03);border-radius:10px;border:1px solid var(--border);width:fit-content">
+          <input type="checkbox" id="note-private" ${note ? (note.private !== false ? 'checked' : '') : 'checked'} style="accent-color:var(--accent);width:16px;height:16px">
+          <span style="font-size:13px;font-weight:500">🔒 设为私有笔记（仅自己可见）</span>
+        </label>
       </div>
       <div class="editor-split">
         <div class="editor-pane">
@@ -2131,6 +2137,9 @@ const App = {
     try {
       await DB.init();
       console.log('[App] 显示登录页');
+      // 强制重置视图状态，防止浏览器恢复之前的 display 导致跳过登录页
+      document.getElementById('login-page').style.display = 'flex';
+      document.getElementById('main-app').style.display = 'none';
       // 清除旧会话，确保每次打开都停留在登录界面
       localStorage.removeItem(Auth.SESSION_KEY);
       // 隐藏加载画面
@@ -2318,20 +2327,22 @@ const App = {
   openNote(noteId) {
     const note = DB.getNotes(Auth.currentUser.id).find(n => n.id === noteId);
     if (!note) return;
-    UI.openModal(`<h2 style="margin-bottom:12px">${note.title}</h2><div style="margin-bottom:16px">${note.tags.map(t=>`<span class="tag tag-info">${t}</span>`).join('')}</div><div class="markdown-body">${Markdown.parse(note.content)}</div><div style="margin-top:20px;display:flex;gap:10px"><button class="btn btn-secondary" onclick="UI.closeModal()">关闭</button><button class="btn btn-primary" onclick="UI.closeModal();App.navigate(&#39;note-editor&#39;, ${note.id})">编辑</button><button class="btn" style="background:var(--accent);color:white" onclick="if(confirm(&#39;确定删除？&#39;)){DB.deleteNote(${note.id});UI.closeModal();App.navigate(&#39;notes&#39;);}">删除</button></div>`);
+    const privacyLabel = note.private !== false ? '<span class="tag tag-primary" style="margin-right:6px">🔒 私有</span>' : '<span class="tag tag-success" style="margin-right:6px">🌐 公开</span>';
+    UI.openModal(`<h2 style="margin-bottom:12px">${note.title}</h2><div style="margin-bottom:16px">${privacyLabel}${note.tags.map(t=>`<span class="tag tag-info">${t}</span>`).join('')}</div><div class="markdown-body">${Markdown.parse(note.content)}</div><div style="margin-top:20px;display:flex;gap:10px"><button class="btn btn-secondary" onclick="UI.closeModal()">关闭</button><button class="btn btn-primary" onclick="UI.closeModal();App.navigate(&#39;note-editor&#39;, ${note.id})">编辑</button><button class="btn" style="background:var(--accent);color:white" onclick="if(confirm(&#39;确定删除？&#39;)){DB.deleteNote(${note.id});UI.closeModal();App.navigate(&#39;notes&#39;);}">删除</button></div>`);
   },
 
   saveNote() {
     const title = (document.getElementById('note-title').value || '').trim();
     const content = (document.getElementById('note-content').value || '').trim();
     const tagsStr = (document.getElementById('note-tags').value || '').trim();
+    const isPrivate = document.getElementById('note-private').checked;
     if (!title || !content) { UI.toast('请填写标题和内容', 'error'); return; }
     const tags = tagsStr ? tagsStr.split(/\s+/).filter(t => t) : [];
     if (this.editingNoteId) {
-      DB.updateNote(this.editingNoteId, { title, content, tags });
+      DB.updateNote(this.editingNoteId, { title, content, tags, private: isPrivate });
       UI.toast('笔记更新成功');
     } else {
-      DB.createNote({ userId: Auth.currentUser.id, title, content, tags });
+      DB.createNote({ userId: Auth.currentUser.id, title, content, tags, private: isPrivate });
       UI.toast('笔记创建成功');
     }
     this.navigate('notes');
