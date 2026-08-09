@@ -1,0 +1,2813 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>C++ OJ 笔记训练系统</title>
+<style>
+:root{--bg:#0a0a12;--bg2:#12121f;--card:rgba(255,255,255,.04);--border:rgba(255,255,255,.06);--text:#e8e8f0;--text2:#6b7280;--accent:#e94560;--accent2:#ff6b81;--ok:#10b981;--warn:#f59e0b;--info:#3b82f6;--side:260px}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
+::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:#334;border-radius:3px}
+
+/* 登录页 */
+#login-page{min-height:100vh;display:flex;align-items:center;justify-content:center;background:radial-gradient(ellipse at top,#1a1a2e,transparent),radial-gradient(ellipse at bottom,#0f3460,transparent),var(--bg);position:relative;overflow:hidden}
+#login-page::before{content:'';position:absolute;width:800px;height:800px;background:radial-gradient(circle,rgba(233,69,96,.08) 0%,transparent 60%);top:-300px;right:-300px;animation:float 8s ease-in-out infinite}
+#login-page::after{content:'';position:absolute;width:600px;height:600px;background:radial-gradient(circle,rgba(59,130,246,.06) 0%,transparent 60%);bottom:-200px;left:-200px;animation:float 10s ease-in-out infinite reverse}
+@keyframes float{0%,100%{transform:translateY(0) rotate(0deg)}50%{transform:translateY(-30px) rotate(2deg)}}
+
+.login-container{display:flex;gap:60px;align-items:center;z-index:1;max-width:1000px;padding:20px}
+.login-brand{text-align:center;max-width:360px}
+.login-brand .logo{width:80px;height:80px;border-radius:24px;background:linear-gradient(135deg,var(--accent),#a855f7);display:flex;align-items:center;justify-content:center;font-size:40px;margin:0 auto 24px;box-shadow:0 20px 40px rgba(233,69,96,.3);animation:pulse-glow 3s ease-in-out infinite}
+@keyframes pulse-glow{0%,100%{box-shadow:0 20px 40px rgba(233,69,96,.3)}50%{box-shadow:0 20px 60px rgba(233,69,96,.5)}}
+.login-brand h1{font-size:32px;font-weight:800;margin-bottom:12px;background:linear-gradient(135deg,#fff,#a0c4ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.login-brand p{color:var(--text2);font-size:15px;line-height:1.7}
+.login-brand .features{display:flex;gap:16px;justify-content:center;margin-top:24px;flex-wrap:wrap}
+.login-brand .feature{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--text2);background:rgba(255,255,255,.03);padding:6px 14px;border-radius:20px;border:1px solid var(--border)}
+
+.login-box{background:rgba(255,255,255,.03);backdrop-filter:blur(30px);border:1px solid var(--border);border-radius:24px;padding:40px;width:400px;box-shadow:0 25px 80px rgba(0,0,0,.4);position:relative;overflow:hidden}
+.login-box::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.2),transparent)}
+.login-header{text-align:center;margin-bottom:32px}
+.login-header h2{font-size:22px;font-weight:700;margin-bottom:6px}
+.login-header p{font-size:13px;color:var(--text2)}
+
+.form-group{margin-bottom:20px}
+.form-group label{display:block;font-size:12px;color:var(--text2);margin-bottom:8px;font-weight:600;text-transform:uppercase;letter-spacing:.5px}
+.input-wrap{position:relative}
+.input-wrap .icon{position:absolute;left:14px;top:50%;transform:translateY(-50%);font-size:16px;opacity:.5}
+.form-control{width:100%;padding:12px 14px 12px 42px;border-radius:12px;border:1px solid var(--border);background:rgba(0,0,0,.2);color:var(--text);font-size:15px;outline:none;transition:all .2s}
+.form-control:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(233,69,96,.1),0 0 20px rgba(233,69,96,.05)}
+.form-control::placeholder{color:#4b5563}
+
+.btn{padding:12px 24px;border-radius:12px;border:none;cursor:pointer;font-size:15px;font-weight:600;transition:all .2s;display:inline-flex;align-items:center;justify-content:center;gap:8px;position:relative;overflow:hidden}
+.btn-block{width:100%}
+.btn-primary{background:linear-gradient(135deg,var(--accent),#a855f7);color:#fff;box-shadow:0 8px 20px rgba(233,69,96,.3)}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 12px 30px rgba(233,69,96,.4)}
+.btn-primary:active{transform:translateY(0)}
+.btn-secondary{background:rgba(255,255,255,.05);color:var(--text2);border:1px solid var(--border)}
+.btn-secondary:hover{background:rgba(255,255,255,.1);color:var(--text)}
+.btn-success{background:var(--ok);color:#fff}
+.btn-info{background:var(--info);color:#fff}
+.btn-sm{padding:8px 16px;font-size:13px}
+
+.login-options{display:flex;justify-content:space-between;align-items:center;margin:16px 0;font-size:13px;color:var(--text2)}
+.login-options label{display:flex;align-items:center;gap:6px;cursor:pointer}
+.login-options input[type="checkbox"]{accent-color:var(--accent)}
+
+.divider{display:flex;align-items:center;gap:12px;margin:20px 0;color:var(--text2);font-size:12px}
+.divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--border)}
+
+.login-footer{text-align:center;margin-top:20px;font-size:13px;color:var(--text2)}
+.login-footer a{color:var(--accent);cursor:pointer;font-weight:500}
+.login-footer a:hover{text-decoration:underline}
+
+.error-toast{background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.2);color:#fca5a5;padding:10px 14px;border-radius:10px;font-size:13px;margin-bottom:16px;display:none;align-items:center;gap:8px}
+.error-toast.show{display:flex;animation:shake .4s ease}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
+
+/* 加载画面 */
+#loading-screen{position:fixed;top:0;left:0;right:0;bottom:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:9999;flex-direction:column;gap:20px;transition:opacity .5s}
+#loading-screen.fade-out{opacity:0;pointer-events:none}
+.loader{width:48px;height:48px;border:3px solid rgba(255,255,255,.05);border-top-color:var(--accent);border-radius:50%;animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-text{font-size:16px;font-weight:600;color:var(--text2)}
+.loading-sub{font-size:13px;color:#4b5563}
+
+/* 主应用 */
+#main-app{display:none;min-height:100vh}
+.sidebar{position:fixed;left:0;top:0;bottom:0;width:var(--side);background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;z-index:50}
+.sidebar-header{padding:24px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px}
+.sidebar-header .logo{width:42px;height:42px;border-radius:12px;background:linear-gradient(135deg,var(--accent),#a855f7);display:flex;align-items:center;justify-content:center;font-size:22px;box-shadow:0 8px 20px rgba(233,69,96,.2)}
+.sidebar-header .brand{font-size:17px;font-weight:700}
+.sidebar-header .role{font-size:10px;padding:3px 10px;border-radius:6px;background:rgba(233,69,96,.15);color:var(--accent);font-weight:700;text-transform:uppercase;letter-spacing:1px}
+.nav-menu{flex:1;padding:12px;overflow-y:auto}
+.nav-section{font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:1.5px;padding:20px 12px 8px;font-weight:600}
+.nav-item{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:10px;cursor:pointer;transition:all .15s;color:var(--text2);font-size:14px;margin-bottom:2px;border:1px solid transparent}
+.nav-item:hover{background:rgba(255,255,255,.04);color:var(--text);border-color:rgba(255,255,255,.04)}
+.nav-item.active{background:rgba(233,69,96,.1);color:var(--accent);font-weight:600;border-color:rgba(233,69,96,.15)}
+.nav-item .icon{font-size:18px;width:24px;text-align:center}
+.sidebar-footer{padding:16px;border-top:1px solid var(--border);font-size:12px;color:var(--text2)}
+.main-content{margin-left:var(--side);min-height:100vh;padding:28px 36px}
+.page-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:28px;padding-bottom:20px;border-bottom:1px solid var(--border);flex-wrap:wrap;gap:12px}
+.page-title{font-size:26px;font-weight:700;letter-spacing:-.5px}.page-actions{display:flex;gap:10px;flex-wrap:wrap}
+.card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:24px;margin-bottom:20px;transition:all .2s}
+.card:hover{border-color:rgba(255,255,255,.1)}
+.card-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+.card-title{font-size:17px;font-weight:600}
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:16px;margin-bottom:28px}
+.stat-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:24px;text-align:center;transition:all .2s}
+.stat-card:hover{transform:translateY(-2px);border-color:rgba(255,255,255,.1)}
+.stat-value{font-size:32px;font-weight:800;background:linear-gradient(135deg,var(--accent),#a855f7);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.stat-label{font-size:13px;color:var(--text2);margin-top:6px;font-weight:500}
+.search-box{width:100%;max-width:360px;padding:10px 16px 10px 40px;border-radius:12px;border:1px solid var(--border);background:rgba(0,0,0,.2);color:var(--text);font-size:14px;outline:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%236b7280' viewBox='0 0 16 16'%3E%3Cpath d='M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:14px center}
+.search-box:focus{border-color:var(--accent)}
+.tag{display:inline-flex;align-items:center;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:500;background:rgba(255,255,255,.06);color:var(--text2);margin-right:6px;margin-bottom:4px;border:1px solid rgba(255,255,255,.04)}
+.tag-primary{background:rgba(233,69,96,.12);color:var(--accent);border-color:rgba(233,69,96,.15)}
+.tag-success{background:rgba(16,185,129,.12);color:var(--ok);border-color:rgba(16,185,129,.15)}
+.tag-warning{background:rgba(245,158,11,.12);color:var(--warn);border-color:rgba(245,158,11,.15)}
+.tag-info{background:rgba(59,130,246,.12);color:var(--info);border-color:rgba(59,130,246,.15)}
+.difficulty{display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:8px;font-size:13px;font-weight:700}
+.diff-1{background:#10b981;color:#fff}.diff-2{background:#059669;color:#fff}.diff-3{background:#f59e0b;color:#1a1a2e}.diff-4{background:#d97706;color:#fff}
+.diff-5{background:#ef4444;color:#fff}.diff-6{background:#dc2626;color:#fff}.diff-7{background:#b91c1c;color:#fff}
+.diff-8{background:#7c3aed;color:#fff}.diff-9{background:#6d28d9;color:#fff}.diff-10{background:linear-gradient(135deg,#e94560,#a855f7,#3b82f6);color:#fff}
+
+@keyframes ac1{0%,100%{box-shadow:0 0 5px rgba(16,185,129,.3)}50%{box-shadow:0 0 15px rgba(16,185,129,.5)}}
+@keyframes ac2{0%,100%{box-shadow:0 0 5px rgba(205,127,50,.3)}50%{box-shadow:0 0 15px rgba(205,127,50,.6)}}
+@keyframes ac3{0%,100%{box-shadow:0 0 5px rgba(192,192,192,.3)}50%{box-shadow:0 0 20px rgba(192,192,192,.7)}}
+@keyframes ac4{0%,100%{box-shadow:0 0 5px rgba(255,215,0,.3)}50%{box-shadow:0 0 25px rgba(255,215,0,.8)}}
+@keyframes ac5{0%,100%{box-shadow:0 0 5px rgba(59,130,246,.3)}50%{box-shadow:0 0 20px rgba(59,130,246,.7),0 0 40px rgba(59,130,246,.3)}}
+@keyframes ac6{0%,100%{box-shadow:0 0 5px rgba(139,92,246,.3)}50%{box-shadow:0 0 25px rgba(139,92,246,.7),0 0 50px rgba(139,92,246,.3)}}
+@keyframes ac7{0%,100%{box-shadow:0 0 5px rgba(239,68,68,.3)}50%{box-shadow:0 0 30px rgba(239,68,68,.8),0 0 60px rgba(239,68,68,.3)}}
+@keyframes ac8{0%,100%{box-shadow:0 0 5px rgba(245,158,11,.3)}50%{box-shadow:0 0 30px rgba(245,158,11,.9),0 0 60px rgba(245,158,11,.4)}}
+@keyframes ac9{0%,100%{box-shadow:0 0 10px rgba(255,215,0,.4)}50%{box-shadow:0 0 40px rgba(255,215,0,1),0 0 80px rgba(255,215,0,.5)}}
+@keyframes ac10{0%{box-shadow:0 0 10px rgba(233,69,96,.5)}25%{box-shadow:0 0 20px rgba(139,92,246,.7)}50%{box-shadow:0 0 30px rgba(59,130,246,.9)}75%{box-shadow:0 0 20px rgba(16,185,129,.7)}100%{box-shadow:0 0 10px rgba(233,69,96,.5)}}
+@keyframes rb{0%{border-color:#e94560}20%{border-color:#f59e0b}40%{border-color:#10b981}60%{border-color:#3b82f6}80%{border-color:#8b5cf6}100%{border-color:#e94560}}
+.ac-effect-1{border:2px solid #10b981;animation:ac1 2s infinite}.ac-effect-2{border:2px solid #cd7f32;animation:ac2 2s infinite}
+.ac-effect-3{border:2px solid #c0c0c0;animation:ac3 2s infinite}.ac-effect-4{border:2px solid #ffd700;animation:ac4 2s infinite}
+.ac-effect-5{border:2px solid #3b82f6;animation:ac5 2s infinite}.ac-effect-6{border:2px solid #8b5cf6;animation:ac6 2s infinite}
+.ac-effect-7{border:2px solid #ef4444;animation:ac7 1.5s infinite}.ac-effect-8{border:2px solid #f59e0b;animation:ac8 1.5s infinite}
+.ac-effect-9{border:2px solid #ffd700;animation:ac9 2s infinite;box-shadow:0 0 20px rgba(255,215,0,.2)}
+.ac-effect-10{border:3px solid;animation:ac10 3s infinite,rb 3s infinite}
+
+.data-table{width:100%;border-collapse:collapse;font-size:14px}
+.data-table th{text-align:left;padding:14px 20px;font-size:11px;color:var(--text2);font-weight:700;text-transform:uppercase;letter-spacing:1px;border-bottom:1px solid var(--border);background:rgba(255,255,255,.02)}
+.data-table td{padding:16px 20px;border-bottom:1px solid var(--border)}.data-table tr:hover td{background:rgba(255,255,255,.03)}
+.data-table tr{cursor:pointer;transition:background .15s}
+.status-ac{color:var(--ok);font-weight:700}.status-wa{color:var(--accent);font-weight:700}.status-tle{color:var(--warn);font-weight:700}
+.status-mle{color:#d97706;font-weight:700}.status-ce{color:#6b7280;font-weight:700}.status-re{color:#8b5cf6;font-weight:700}
+.status-pending{color:var(--info);animation:pulse 1.5s infinite}@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.code-editor{width:100%;min-height:320px;padding:18px;border-radius:14px;border:1px solid var(--border);background:#06060e;color:#a0c4ff;font-family:'JetBrains Mono','Fira Code',Consolas,monospace;font-size:14px;line-height:1.7;outline:none;resize:vertical;transition:all .2s}
+.code-editor:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(233,69,96,.08)}
+.code-block{background:#06060e;border-radius:14px;padding:20px;font-family:'JetBrains Mono',Consolas,monospace;font-size:13px;overflow-x:auto;color:#a0c4ff;border:1px solid var(--border);line-height:1.7;white-space:pre}
+.markdown-body h1{font-size:26px;margin:20px 0 14px;color:var(--accent);font-weight:700}.markdown-body h2{font-size:21px;margin:18px 0 12px;color:#a0c4ff;font-weight:600}
+.markdown-body h3{font-size:18px;margin:14px 0 10px;color:#ddd;font-weight:600}.markdown-body p{margin:10px 0;line-height:1.8;color:#c4c4d4}
+.markdown-body pre{background:#06060e;border-radius:14px;padding:18px;overflow-x:auto;border:1px solid var(--border);margin:14px 0}
+.markdown-body code{font-family:'JetBrains Mono',Consolas,monospace;font-size:13px;background:rgba(255,255,255,.06);padding:3px 8px;border-radius:6px;color:var(--accent2)}
+.markdown-body pre code{background:none;padding:0;color:#a0c4ff}.markdown-body ul,.markdown-body ol{margin:10px 0 10px 24px}
+.markdown-body li{margin:6px 0;color:#c4c4d4}.markdown-body blockquote{border-left:3px solid var(--accent);padding-left:16px;margin:14px 0;color:var(--text2);font-style:italic}
+.problem-layout{display:grid;grid-template-columns:1fr 1fr;gap:24px}@media(max-width:1100px){.problem-layout{grid-template-columns:1fr}}
+.problem-panel{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:24px;max-height:calc(100vh - 160px);overflow-y:auto}
+.sample-box{background:rgba(0,0,0,.25);border-radius:10px;padding:14px;margin:10px 0;font-family:'JetBrains Mono',Consolas,monospace;font-size:13px;border:1px solid var(--border);color:#a0c4ff}
+.sample-label{font-size:11px;color:var(--text2);margin-bottom:6px;font-weight:600;text-transform:uppercase;letter-spacing:.5px}
+.judge-animation{display:flex;flex-direction:column;gap:10px;margin:16px 0}.test-case{display:flex;align-items:center;gap:12px;padding:12px 16px;border-radius:10px;background:rgba(0,0,0,.2);border:1px solid var(--border);transition:all .2s}
+.test-case.pass{border-color:var(--ok);background:rgba(16,185,129,.04)}.test-case.fail{border-color:var(--accent);background:rgba(233,69,96,.04)}
+.tc-status{font-weight:700;font-size:13px}.tc-info{font-size:12px;color:var(--text2);margin-left:auto}
+.file-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px}
+.file-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:20px;text-align:center;cursor:pointer;transition:all .2s}
+.file-card:hover{border-color:var(--accent);transform:translateY(-3px);box-shadow:0 12px 30px rgba(0,0,0,.2)}
+.file-icon-large{font-size:44px;margin-bottom:10px}
+.file-name{font-size:13px;font-weight:600;word-break:break-all}.file-meta{font-size:11px;color:var(--text2);margin-top:6px}
+.upload-area{border:2px dashed var(--border);border-radius:16px;padding:48px;text-align:center;cursor:pointer;transition:all .2s;margin-bottom:24px;background:rgba(255,255,255,.01)}
+.upload-area:hover{border-color:var(--accent);background:rgba(233,69,96,.03)}
+.editor-split{display:grid;grid-template-columns:1fr 1fr;gap:20px}@media(max-width:900px){.editor-split{grid-template-columns:1fr}}
+.editor-pane{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:20px;min-height:420px}
+.editor-textarea{width:100%;min-height:420px;background:transparent;border:none;color:var(--text);font-family:'JetBrains Mono',Consolas,monospace;font-size:14px;line-height:1.7;outline:none;resize:none}
+.preview-pane{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:24px;min-height:420px;overflow-y:auto}
+.modal-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.7);backdrop-filter:blur(8px);display:none;align-items:center;justify-content:center;z-index:100;padding:20px}
+.modal-overlay.active{display:flex}.modal-box{background:var(--bg2);border:1px solid var(--border);border-radius:20px;padding:32px;max-width:720px;width:100%;max-height:85vh;overflow-y:auto;position:relative;box-shadow:0 25px 80px rgba(0,0,0,.5)}
+.modal-close{position:absolute;top:18px;right:22px;background:none;border:none;color:var(--text2);font-size:24px;cursor:pointer;transition:color .2s}.modal-close:hover{color:var(--accent);transform:rotate(90deg)}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:16px}@media(max-width:700px){.form-row{grid-template-columns:1fr}}
+.form-group2{margin-bottom:18px}.form-group2 label{display:block;font-size:12px;color:var(--text2);margin-bottom:8px;font-weight:600;text-transform:uppercase;letter-spacing:.5px}
+.form-control2,.form-select,.form-textarea{width:100%;padding:11px 16px;border-radius:12px;border:1px solid var(--border);background:rgba(0,0,0,.2);color:var(--text);font-size:14px;outline:none;transition:all .2s}
+.form-control2:focus,.form-select:focus,.form-textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(233,69,96,.08)}
+.form-textarea{min-height:140px;font-family:'JetBrains Mono',Consolas,monospace;resize:vertical;line-height:1.7}
+.form-select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236b7280' d='M6 8L1 3h10z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;padding-right:36px}
+.filter-bar{display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap;align-items:center}
+.filter-chip{padding:7px 16px;border-radius:24px;border:1px solid var(--border);background:transparent;color:var(--text2);font-size:13px;cursor:pointer;transition:all .2s;font-weight:500}
+.filter-chip:hover{background:rgba(255,255,255,.05)}.filter-chip.active{background:var(--accent);color:#fff;border-color:var(--accent);box-shadow:0 4px 12px rgba(233,69,96,.25)}
+.toast-container{position:fixed;bottom:24px;right:24px;z-index:200;display:flex;flex-direction:column;gap:10px}
+.toast{padding:14px 22px;border-radius:14px;font-weight:600;font-size:14px;box-shadow:0 8px 30px rgba(0,0,0,.3);transform:translateX(120%);opacity:0;transition:all .35s cubic-bezier(.34,1.56,.64,1);max-width:420px;border:1px solid rgba(255,255,255,.05)}
+.toast.show{transform:translateX(0);opacity:1}.toast-success{background:rgba(16,185,129,.15);color:#6ee7b7;border-color:rgba(16,185,129,.2);backdrop-filter:blur(10px)}
+.toast-error{background:rgba(239,68,68,.15);color:#fca5a5;border-color:rgba(239,68,68,.2);backdrop-filter:blur(10px)}
+.toast-info{background:rgba(59,130,246,.15);color:#93c5fd;border-color:rgba(59,130,246,.2);backdrop-filter:blur(10px)}
+.empty-state{text-align:center;padding:60px 20px;color:var(--text2)}.hidden{display:none !important}
+.ac-code-preview{background:#06060e;border-radius:10px;padding:14px;font-family:'JetBrains Mono',Consolas,monospace;font-size:12px;overflow-x:auto;color:#a0c4ff;margin-top:12px;max-height:120px;overflow-y:auto;white-space:pre;border:1px solid var(--border)}
+.diagnostic-box{background:rgba(0,0,0,.3);border:1px solid var(--border);border-radius:12px;padding:14px;margin-top:14px;font-size:12px;font-family:'JetBrains Mono',monospace;max-height:180px;overflow-y:auto;color:var(--text2);line-height:1.6}
+
+@media(max-width:768px){
+  .login-container{flex-direction:column;gap:30px}
+  .login-box{width:100%;max-width:400px}
+  .sidebar{width:100%;position:relative;height:auto}
+  .main-content{margin-left:0}
+}
+</style>
+<base target="_blank">
+<base target="_blank">
+<base target="_blank">
+<base target="_blank">
+</head>
+<body>
+<script>
+window.onerror = function(msg, url, line, col, error) {
+  var div = document.createElement('div');
+  div.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:99999;background:#ef4444;color:#fff;padding:12px 20px;font-family:monospace;font-size:13px;white-space:pre-wrap;';
+  div.textContent = 'JS错误: ' + msg + ' (行' + line + ')';
+  document.body.appendChild(div);
+  console.error('全局捕获:', msg, url, line, col, error);
+};
+</script>
+
+<!-- 登录页 -->
+<div id="login-page">
+  <div class="login-container">
+    <div class="login-brand">
+      <div class="logo">📘</div>
+      <h1>C++ OJ 笔记训练系统</h1>
+      <p>专为算法竞赛选手打造的在线评测与笔记管理平台。刷题、记录、复盘，一站式提升编程能力。</p>
+      <div class="features">
+        <span class="feature">⚡ 在线评测</span>
+        <span class="feature">📝 笔记管理</span>
+        <span class="feature">🏆 AC代码库</span>
+      </div>
+    </div>
+    <div class="login-box">
+      <div class="login-header">
+        <h2>欢迎回来,这里是Code Planet(V1.2.4)</h2>
+        <p>请登录以访问系统</p>
+      </div>
+      <div id="login-error" class="error-toast">
+        <span>⚠️</span><span id="login-error-text">用户名或密码错误</span>
+      </div>
+      <div id="login-form">
+        <div class="form-group">
+          <label>用户名</label>
+          <div class="input-wrap">
+            <span class="icon">👤</span>
+            <input type="text" class="form-control" id="login-username" placeholder="输入用户名" autocomplete="username">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>密码</label>
+          <div class="input-wrap">
+            <span class="icon">🔒</span>
+            <input type="password" class="form-control" id="login-password" placeholder="输入密码" autocomplete="current-password">
+          </div>
+        </div>
+        <div class="login-options">
+          <label><input type="checkbox" id="remember-me" checked> 记住我</label>
+          <a style="color:var(--accent);font-size:12px;cursor:pointer" onclick="Auth.showReset()">忘记密码？</a>
+        </div>
+        <button class="btn btn-primary btn-block" onclick="Auth.login()" id="login-btn">
+          <span>🚀</span> 登录系统
+        </button>
+        <div class="divider">或</div>
+        <button class="btn btn-secondary btn-block" onclick="UI.showRegister()">✨ 注册新账号</button>
+        <div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--border);display:flex;gap:8px;justify-content:center;flex-wrap:wrap">
+          <button class="btn btn-secondary btn-sm" onclick="App.forceReset()" title="重置所有数据并恢复预置账号">🔄 重置数据</button>
+          <button class="btn btn-info btn-sm" onclick="Auth.diagnose()" title="诊断登录问题">🔍 诊断</button>
+          <button class="btn btn-success btn-sm" onclick="Auth.emergencyLogin()" title="绕过验证直接以管理员身份登录">⚡ 紧急登录</button>
+        </div>
+        <div id="diagnostic-output" class="diagnostic-box" style="display:none"></div>
+      </div>
+      <div id="register-form" style="display:none">
+        <div class="form-group">
+          <label>用户名</label>
+          <div class="input-wrap">
+            <span class="icon">👤</span>
+            <input type="text" class="form-control" id="reg-username" placeholder="设置用户名" autocomplete="off">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>密码</label>
+          <div class="input-wrap">
+            <span class="icon">🔒</span>
+            <input type="password" class="form-control" id="reg-password" placeholder="设置密码" autocomplete="new-password">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>确认密码</label>
+          <div class="input-wrap">
+            <span class="icon">🔐</span>
+            <input type="password" class="form-control" id="reg-password2" placeholder="再次输入密码" autocomplete="new-password">
+          </div>
+        </div>
+        <button class="btn btn-success btn-block" onclick="Auth.register()">✨ 注册账号</button>
+        <div class="login-footer" style="margin-top:16px">
+          已有账号？<a onclick="UI.showLogin()">返回登录</a>
+        </div>
+      </div>
+      <div id="reset-form" style="display:none">
+        <div class="form-group">
+          <label>管理员账号验证</label>
+          <div class="input-wrap">
+            <span class="icon">🔑</span>
+            <input type="password" class="form-control" id="reset-admin-pwd" placeholder="输入管理员密码">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>新密码</label>
+          <div class="input-wrap">
+            <span class="icon">🔐</span>
+            <input type="password" class="form-control" id="reset-new-pwd" placeholder="设置新密码">
+          </div>
+        </div>
+        <button class="btn btn-primary btn-block" onclick="Auth.resetPassword()">🔁 重置密码</button>
+        <div class="login-footer" style="margin-top:16px">
+          <a onclick="UI.showLogin()">返回登录</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 主应用 -->
+<div id="main-app">
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <div class="logo">📘</div>
+      <div>
+        <div class="brand">C++ OJ</div>
+        <div style="font-size:12px;color:var(--text2)" id="user-nickname">User</div>
+      </div>
+      <span class="role" id="user-role">ADMIN</span>
+    </div>
+    <div class="nav-menu">
+      <div class="nav-section">训练</div>
+      <div class="nav-item active" data-page="dashboard" onclick="App.navigate('dashboard')"><span class="icon">📊</span> 仪表盘</div>
+      <div class="nav-item" data-page="problems" onclick="App.navigate('problems')"><span class="icon">📚</span> 题库</div>
+      <div class="nav-item" data-page="submissions" onclick="App.navigate('submissions')"><span class="icon">📝</span> 提交记录</div>
+      <div class="nav-item" data-page="ac-codes" onclick="App.navigate('ac-codes')"><span class="icon">🏆</span> AC代码库</div>
+      <div class="nav-section">学习</div>
+      <div class="nav-item" data-page="notes" onclick="App.navigate('notes')"><span class="icon">📝</span> 笔记</div>
+      <div class="nav-item" data-page="files" onclick="App.navigate('files')"><span class="icon">📁</span> 资料库</div>
+      <div class="nav-section" id="admin-nav-section" style="display:none">管理后台</div>
+      <div class="nav-item" data-page="admin-users" onclick="App.navigate('admin-users')" id="nav-admin-users" style="display:none"><span class="icon">👥</span> 用户管理</div>
+      <div class="nav-item" data-page="admin-problems" onclick="App.navigate('admin-problems')" id="nav-admin-problems" style="display:none"><span class="icon">⚙️</span> 题目管理</div>
+      <div class="nav-item" data-page="admin-league" onclick="App.navigate('admin-league')" id="nav-admin-league" style="display:none"><span class="icon">🏅</span> 联赛管理</div>
+      <div class="nav-section">账户</div>
+      <div class="nav-section">战队</div>
+      <div class="nav-item" data-page="teams" onclick="App.navigate('teams')"><span class="icon">🛡️</span> 战队中心</div>
+      <div class="nav-item" data-page="league" onclick="App.navigate('league')"><span class="icon">🏆</span> 跨战队联赛</div>
+
+      <div class="nav-item" data-page="profile" onclick="App.navigate('profile')"><span class="icon">👤</span> 个人中心</div>
+      <div class="nav-item" onclick="Auth.logout()"><span class="icon">🚪</span> 退出登录</div>
+    </div>
+    <div class="sidebar-footer">
+      <div>💾 数据存储于本地</div>
+      <div style="margin-top:4px">支持导出/导入迁移</div>
+    </div>
+  </aside>
+  <main class="main-content" id="main-content"></main>
+</div>
+
+<div class="toast-container" id="toast-container"></div>
+<div class="modal-overlay" id="generic-modal" onclick="if(event.target===this)UI.closeModal()">
+  <div class="modal-box" id="modal-content"></div>
+</div>
+
+<script>
+// ==================== 数据库层 ====================
+// ==================== 数据库层 (IndexedDB + localStorage 双保险) ====================
+const DB = {
+  KEY: 'cpp_oj_db_v3',
+  DB_NAME: 'CppOJDatabase',
+  DB_VERSION: 1,
+  STORE_NAME: 'appdata',
+  _cache: null,
+  _db: null,
+  _initialized: false,
+  _saveTimeout: null,
+  _pendingSave: false,
+  _useIndexedDB: false,
+
+  async init() {
+    console.log('[DB] 初始化数据库...');
+    let initError = null;
+    try {
+      await this._tryInitIndexedDB();
+      if (this._useIndexedDB) {
+        await this._loadFromIndexedDB();
+      } else {
+        await this._loadFromLocalStorage();
+      }
+    } catch (e) {
+      initError = e;
+      console.error('[DB] 主存储加载失败:', e);
+    }
+    if (!this._cache || !this._validateData(this._cache)) {
+      console.warn('[DB] 缓存数据无效，使用默认数据');
+      this._cache = this._getDefaultData();
+    }
+    this._ensureAdmin(this._cache);
+    this._initialized = true;
+    console.log('[DB] 就绪，用户数:', (this._cache.users || []).length,
+      '题目数:', (this._cache.problems || []).length,
+      'IndexedDB:', this._useIndexedDB ? '启用' : '未启用',
+      initError ? '恢复模式' : '正常模式');
+  },
+
+  async _tryInitIndexedDB() {
+    return new Promise((resolve) => {
+      if (!window.indexedDB) {
+        console.log('[DB] 浏览器不支持 IndexedDB');
+        resolve();
+        return;
+      }
+      const request = indexedDB.open(this.DB_NAME, this.DB_VERSION);
+      request.onerror = (e) => {
+        console.warn('[DB] IndexedDB 打开失败:', e.target.error);
+        resolve();
+      };
+      request.onsuccess = (event) => {
+        this._db = event.target.result;
+        this._useIndexedDB = true;
+        console.log('[DB] IndexedDB 连接成功');
+        resolve();
+      };
+      request.onupgradeneeded = (event) => {
+        const db = event.target.result;
+        if (!db.objectStoreNames.contains(this.STORE_NAME)) {
+          db.createObjectStore(this.STORE_NAME);
+          console.log('[DB] IndexedDB 对象存储已创建');
+        }
+      };
+    });
+  },
+
+  async _loadFromIndexedDB() {
+    const data = await this._readIndexedDB();
+    if (data && this._validateData(data)) {
+      this._cache = data;
+      console.log('[DB] 从 IndexedDB 加载数据成功');
+      return;
+    }
+    const legacy = this._readLocalStorage();
+    if (legacy && this._validateData(legacy)) {
+      this._cache = legacy;
+      await this._writeIndexedDB(legacy);
+      console.log('[DB] 从 localStorage 迁移数据到 IndexedDB');
+      return;
+    }
+    this._cache = this._getDefaultData();
+    await this._writeIndexedDB(this._cache);
+    console.log('[DB] 创建默认数据到 IndexedDB');
+  },
+
+  async _loadFromLocalStorage() {
+    const data = this._readLocalStorage();
+    if (data && this._validateData(data)) {
+      this._cache = data;
+      console.log('[DB] 从 localStorage 加载数据成功');
+      return;
+    }
+    this._cache = this._getDefaultData();
+    this._writeLocalStorage(this._cache);
+    console.log('[DB] 创建默认数据到 localStorage');
+  },
+
+  _readLocalStorage() {
+    try {
+      const raw = localStorage.getItem(this.KEY);
+      if (!raw) return null;
+      return JSON.parse(raw);
+    } catch(e) {
+      console.error('[DB] localStorage 读取失败:', e);
+      return null;
+    }
+  },
+
+  _writeLocalStorage(data) {
+    try {
+      localStorage.setItem(this.KEY, JSON.stringify(data));
+      return true;
+    } catch(e) {
+      console.warn('[DB] localStorage 写入失败:', e.message);
+      return false;
+    }
+  },
+
+  _readIndexedDB() {
+    return new Promise((resolve) => {
+      try {
+        const tx = this._db.transaction([this.STORE_NAME], 'readonly');
+        const store = tx.objectStore(this.STORE_NAME);
+        const request = store.get(this.KEY);
+        request.onsuccess = () => resolve(request.result || null);
+        request.onerror = () => {
+          console.warn('[DB] IndexedDB 读取失败');
+          resolve(null);
+        };
+      } catch(e) {
+        resolve(null);
+      }
+    });
+  },
+
+  _writeIndexedDB(data) {
+    return new Promise((resolve) => {
+      try {
+        const tx = this._db.transaction([this.STORE_NAME], 'readwrite');
+        const store = tx.objectStore(this.STORE_NAME);
+        const request = store.put(data, this.KEY);
+        request.onsuccess = () => {
+          console.log('[DB] IndexedDB 保存成功');
+          resolve(true);
+        };
+        request.onerror = () => {
+          console.warn('[DB] IndexedDB 保存失败');
+          resolve(false);
+        };
+      } catch(e) {
+        console.warn('[DB] IndexedDB 写入异常:', e);
+        resolve(false);
+      }
+    });
+  },
+
+  _validateData(data) {
+    return data && typeof data === 'object' && Array.isArray(data.users);
+  },
+
+  _ensureAdmin(data) {
+    if (!data || typeof data !== 'object') { console.error('[DB] _ensureAdmin 收到无效数据'); return; }
+    if (!data.users) data.users = [];
+    const idx = data.users.findIndex(u => u && u.username === 'wanglize');
+    if (idx === -1) {
+      console.warn('[DB] 管理员账号缺失，自动修复...');
+      data.users.unshift({
+        id: 1, username: 'wanglize', password: 'wanglize20140325',
+        role: 'admin', nickname: 'wanglize',
+        createdAt: new Date().toISOString().split('T')[0], lastLogin: null
+      });
+      this.set(data);
+    } else if (data.users[idx].password !== 'wanglize20140325') {
+      console.warn('[DB] 管理员密码异常，强制恢复默认密码');
+      data.users[idx].password = 'wanglize20140325';
+      data.users[idx].role = 'admin';
+      this.set(data);
+    }
+  },
+
+  _getDefaultData() {
+    return {"users":[{"id":1,"username":"wanglize","password":"wanglize20140325","role":"admin","nickname":"wanglize","createdAt":"2026-08-07","lastLogin":null}],"problems":[{"id":1,"title":"A + B Problem","difficulty":1,"timeLimit":1000,"memoryLimit":128,"description":"计算两个整数 a 和 b 的和。\n\n## 输入格式\n一行两个整数 a, b\n\n## 输出格式\n一行一个整数，表示 a+b\n\n## 数据范围\n-10^9 ≤ a,b ≤ 10^9","inputFormat":"一行两个整数 a, b","outputFormat":"一行一个整数","samples":[{"input":"1 2","output":"3"},{"input":"5 7","output":"12"}],"testCases":[{"input":"1 2","output":"3"},{"input":"5 7","output":"12"},{"input":"100 200","output":"300"},{"input":"-5 3","output":"-2"}],"tags":["入门","模拟"],"authorId":1,"createdAt":"2026-08-07","standardCode":"#include <iostream>\nusing namespace std;\nint main(){\n    int a,b;\n    cin>>a>>b;\n    cout<<a+b;\n    return 0;\n}"},{"id":2,"title":"判断素数","difficulty":3,"timeLimit":1000,"memoryLimit":128,"description":"给定一个正整数 n，判断它是否为素数。\n\n## 输入格式\n一行一个正整数 n\n\n## 输出格式\n如果是素数输出 Yes，否则输出 No","inputFormat":"一行一个正整数 n","outputFormat":"Yes 或 No","samples":[{"input":"7","output":"Yes"},{"input":"10","output":"No"}],"testCases":[{"input":"7","output":"Yes"},{"input":"10","output":"No"},{"input":"2","output":"Yes"},{"input":"1","output":"No"}],"tags":["数学","素数"],"authorId":1,"createdAt":"2026-08-07","standardCode":"#include <iostream>\nusing namespace std;\nbool isPrime(int n){\n    if(n<2)return false;\n    for(int i=2;i*i<=n;i++)\n        if(n%i==0)return false;\n    return true;\n}\nint main(){\n    int n;cin>>n;\n    cout<<(isPrime(n)?\"Yes\":\"No\");\n    return 0;\n}"},{"id":3,"title":"斐波那契数列","difficulty":2,"timeLimit":1000,"memoryLimit":128,"description":"求斐波那契数列的第 n 项。\n\nf1 = 1, f2 = 1, fn = fn-1 + fn-2\n\n## 输入格式\n一行一个正整数 n\n\n## 输出格式\n一行一个整数，表示 fn","inputFormat":"一行一个正整数 n","outputFormat":"一行一个整数","samples":[{"input":"5","output":"5"},{"input":"10","output":"55"}],"testCases":[{"input":"5","output":"5"},{"input":"10","output":"55"},{"input":"1","output":"1"},{"input":"2","output":"1"}],"tags":["递推","数学"],"authorId":1,"createdAt":"2026-08-07","standardCode":"#include <iostream>\nusing namespace std;\nint main(){\n    int n;cin>>n;\n    if(n<=2){cout<<1;return 0;}\n    long long a=1,b=1,c;\n    for(int i=3;i<=n;i++){c=a+b;a=b;b=c;}\n    cout<<b;\n    return 0;\n}"},{"id":4,"title":"快速幂","difficulty":5,"timeLimit":1000,"memoryLimit":128,"description":"计算 a^b mod p。\n\n## 输入格式\n一行三个整数 a, b, p\n\n## 输出格式\n一行一个整数","inputFormat":"a b p","outputFormat":"a^b mod p","samples":[{"input":"2 10 1000","output":"24"}],"testCases":[{"input":"2 10 1000","output":"24"},{"input":"3 5 100","output":"43"},{"input":"10 0 7","output":"1"}],"tags":["数学","快速幂"],"authorId":1,"createdAt":"2026-08-07","standardCode":"long long qpow(long long a,long long b,long long p){\n    long long res=1%p;\n    while(b){\n        if(b&1)res=res*a%p;\n        a=a*a%p;\n        b>>=1;\n    }\n    return res;\n}"},{"id":5,"title":"线段树区间求和","difficulty":8,"timeLimit":2000,"memoryLimit":256,"description":"维护一个长度为 n 的数组，支持区间修改和区间求和。\n\n## 输入格式\n第一行两个整数 n, m\n第二行 n 个整数\n接下来 m 行，每行一个操作","inputFormat":"n m\na[1..n]\nop l r v / op l r","outputFormat":"每个查询操作的答案","samples":[{"input":"5 3\n1 2 3 4 5\n1 1 3\n2 2 4 1\n1 1 5","output":"6\n15"}],"testCases":[{"input":"5 3\n1 2 3 4 5\n1 1 3\n2 2 4 1\n1 1 5","output":"6\n15"}],"tags":["数据结构","线段树"],"authorId":1,"createdAt":"2026-08-07","standardCode":"// 线段树模板代码"}],"submissions":[],"notes":[{"id":1,"userId":1,"title":"C++11 智能指针总结","content":"# C++11 智能指针\n\n## 三种智能指针\n\n1. **unique_ptr** - 独占所有权\n2. **shared_ptr** - 共享所有权，引用计数\n3. **weak_ptr** - 弱引用，打破循环引用\n\n```cpp\n#include <memory>\nauto p = std::make_unique<int>(42);\n```","tags":["C++11","内存管理"],"createdAt":"2026-08-06"},{"id":2,"userId":1,"title":"STL vector 扩容机制","content":"# vector 扩容\n\n- 当 size == capacity 时触发扩容\n- GCC 通常为 **2倍**，MSVC 为 **1.5倍**\n- 建议预先 reserve\n\n```cpp\nvector<int> v;\nv.reserve(1000);\n```","tags":["STL","性能"],"createdAt":"2026-08-05"}],"files":[{"id":1,"name":"C++ Primer 第5版.pdf","size":"15.2 MB","type":"pdf","date":"2026-08-01","data":null},{"id":2,"name":"Effective Modern C++.epub","size":"3.8 MB","type":"epub","date":"2026-08-02","data":null}],"teams":[],"teamLeagues":[],"leagues":[],"settings":{}};
+  },
+
+  async reset() {
+    console.log('[DB] 执行重置...');
+    const defaultData = this._getDefaultData();
+    this._cache = JSON.parse(JSON.stringify(defaultData));
+    try { this._writeLocalStorage(this._cache); } catch(e) { console.warn('[DB] localStorage 写入失败:', e); }
+    if (this._useIndexedDB && this._db) {
+      try {
+        const tx = this._db.transaction([this.STORE_NAME], 'readwrite');
+        const store = tx.objectStore(this.STORE_NAME);
+        await new Promise((resolve) => {
+          const req = store.clear();
+          req.onsuccess = () => {
+            store.put(this._cache, this.KEY);
+            resolve();
+          };
+          req.onerror = () => resolve();
+        });
+      } catch(e) { console.warn('[DB] IndexedDB 重置失败:', e); }
+    }
+    console.log('[DB] 重置完成');
+  },
+
+  get() {
+    if (!this._initialized) {
+      console.warn('[DB] 数据库尚未初始化，返回默认数据');
+      return this._cache || this._getDefaultData();
+    }
+    return this._cache;
+  },
+
+  set(data) {
+    this._cache = data;
+    this._pendingSave = true;
+    this._scheduleSave();
+    this._writeLocalStorage(data);
+  },
+
+  _scheduleSave() {
+    if (this._saveTimeout) return;
+    this._saveTimeout = setTimeout(() => this._doSave(), 100);
+  },
+
+  async _doSave() {
+    this._saveTimeout = null;
+    if (!this._pendingSave) return;
+    this._pendingSave = false;
+    if (this._useIndexedDB) {
+      await this._writeIndexedDB(this._cache);
+    }
+  },
+
+  getUser(username) {
+    const data = this.get();
+    if (!data.users) return null;
+    return data.users.find(u => u && u.username === username) || null;
+  },
+
+  getUserById(id) {
+    const data = this.get();
+    if (!data.users) return null;
+    return data.users.find(u => u && u.id === id) || null;
+  },
+
+  createUser(username, password, role) {
+    role = role || 'user';
+    const data = this.get();
+    if (!data.users) data.users = [];
+    if (data.users.some(u => u && u.username === username)) return null;
+    const user = {
+      id: Date.now(), username, password, role,
+      nickname: username,
+      createdAt: new Date().toISOString().split('T')[0],
+      lastLogin: null
+    };
+    data.users.push(user);
+    this.set(data);
+    return user;
+  },
+
+  getProblems() { return this.get().problems || []; },
+  getProblem(id) { return (this.get().problems || []).find(p => p.id === id) || null; },
+  createProblem(problem) {
+    const data = this.get();
+    if (!data.problems) data.problems = [];
+    problem.id = Date.now();
+    problem.createdAt = new Date().toISOString().split('T')[0];
+    data.problems.push(problem);
+    this.set(data);
+    return problem;
+  },
+  updateProblem(id, updates) {
+    const data = this.get();
+    const idx = (data.problems || []).findIndex(p => p.id === id);
+    if (idx === -1) return false;
+    data.problems[idx] = Object.assign({}, data.problems[idx], updates);
+    this.set(data);
+    return true;
+  },
+  deleteProblem(id) {
+    const data = this.get();
+    data.problems = (data.problems || []).filter(p => p.id !== id);
+    this.set(data);
+  },
+  getSubmissions(userId) {
+    const subs = this.get().submissions || [];
+    return userId ? subs.filter(s => s.userId === userId) : subs;
+  },
+  createSubmission(sub) {
+    const data = this.get();
+    if (!data.submissions) data.submissions = [];
+    sub.id = Date.now();
+    sub.submitTime = new Date().toISOString();
+    data.submissions.unshift(sub);
+    this.set(data);
+    return sub;
+  },
+  getNotes(userId) { return (this.get().notes || []).filter(n => n.userId === userId); },
+  createNote(note) {
+    const data = this.get();
+    if (!data.notes) data.notes = [];
+    note.id = Date.now();
+    note.createdAt = new Date().toISOString().split('T')[0];
+    data.notes.push(note);
+    this.set(data);
+    return note;
+  },
+  updateNote(id, updates) {
+    const data = this.get();
+    const idx = (data.notes || []).findIndex(n => n.id === id);
+    if (idx === -1) return false;
+    data.notes[idx] = Object.assign({}, data.notes[idx], updates);
+    this.set(data);
+    return true;
+  },
+  deleteNote(id) {
+    const data = this.get();
+    data.notes = (data.notes || []).filter(n => n.id !== id);
+    this.set(data);
+  },
+  getFiles() { return this.get().files || []; },
+  addFile(file) {
+    const data = this.get();
+    if (!data.files) data.files = [];
+    file.id = Date.now();
+    data.files.push(file);
+    this.set(data);
+    return file;
+  },
+  deleteFile(id) {
+    const data = this.get();
+    data.files = (data.files || []).filter(f => f.id !== id);
+    this.set(data);
+  },
+  exportAll() { return JSON.stringify(this.get(), null, 2); },
+  importAll(json) {
+    try {
+      const data = JSON.parse(json);
+      if (!data.users || !data.problems) return false;
+      this.set(data);
+      return true;
+    } catch(e) { return false; }
+  },
+
+  // ==================== 战队系统 ====================
+  getTeams() { return this.get().teams || []; },
+  getTeamById(id) { return (this.get().teams || []).find(t => t.id === id) || null; },
+  getTeamByUserId(userId) { return (this.get().teams || []).find(t => t.members && t.members.includes(userId)) || null; },
+  getTeamCount() { return (this.get().teams || []).length; },
+  createTeam(name, leaderId) {
+    const data = this.get();
+    if (!data.teams) data.teams = [];
+    if (data.teams.length >= 3) return { success: false, message: '战队数量已达上限（最多3个）' };
+    if (data.teams.some(t => t.name === name)) return { success: false, message: '战队名称已存在' };
+    const team = {
+      id: Date.now(), name, leaderId, members: [leaderId],
+      score: 0, seasonScore: 0,
+      createdAt: new Date().toISOString().split('T')[0], leagueHistory: []
+    };
+    data.teams.push(team); this.set(data);
+    return { success: true, team };
+  },
+  joinTeam(teamId, userId) {
+    const data = this.get();
+    const team = (data.teams || []).find(t => t.id === teamId);
+    if (!team) return { success: false, message: '战队不存在' };
+    if (team.members.includes(userId)) return { success: false, message: '已在该战队中' };
+    const existing = (data.teams || []).find(t => t.members.includes(userId));
+    if (existing) return { success: false, message: '已加入其他战队，请先退出' };
+    team.members.push(userId); this.set(data);
+    return { success: true };
+  },
+  leaveTeam(userId) {
+    const data = this.get();
+    const team = (data.teams || []).find(t => t.members && t.members.includes(userId));
+    if (!team) return { success: false, message: '未加入任何战队' };
+    team.members = team.members.filter(id => id !== userId);
+    if (team.leaderId === userId && team.members.length > 0) team.leaderId = team.members[0];
+    if (team.members.length === 0) data.teams = (data.teams || []).filter(t => t.id !== team.id);
+    this.set(data); return { success: true };
+  },
+  deleteTeam(id) { const data = this.get(); data.teams = (data.teams || []).filter(t => t.id !== id); this.set(data); },
+  recordLeague(rankings) {
+    const data = this.get();
+    if (!data.teamLeagues) data.teamLeagues = [];
+    if (!data.settings) data.settings = {};
+    const now = new Date(); const season = this._getCurrentSeason();
+    const league = { id: Date.now(), season, date: now.toISOString().split('T')[0], rankings };
+    data.teamLeagues.unshift(league);
+    const nextDate = new Date(now); nextDate.setDate(nextDate.getDate() + 21);
+    data.settings.nextLeagueDate = nextDate.toISOString().split('T')[0];
+    this.set(data); return league;
+  },
+  getLeagues() { return this.get().teamLeagues || []; },
+  getSettings() { return this.get().settings || {}; },
+  _getCurrentSeason() {
+    const now = new Date(); const year = now.getFullYear(); const month = now.getMonth() + 1; const day = now.getDate();
+    if (month < 10 || (month === 10 && day < 12)) return (year - 1) + '-' + year;
+    return year + '-' + (year + 1);
+  },
+  checkSeasonReset() {
+    const data = this.get(); if (!data.settings) data.settings = {}; if (!data.teams) data.teams = [];
+    const now = new Date(); const currentSeason = this._getCurrentSeason(); const lastReset = data.settings.lastSeasonReset;
+    if (lastReset) {
+      const lastDate = new Date(lastReset); const currentYear = now.getFullYear();
+      const resetThisYear = new Date(currentYear, 9, 12);
+      if (now >= resetThisYear && lastDate < resetThisYear) {
+        data.teams.forEach(t => { t.seasonScore = 0; t.score = 0; t.leagueHistory = []; });
+        data.settings.lastSeasonReset = now.toISOString().split('T')[0];
+        data.settings.currentSeason = currentSeason; this.set(data);
+        return { reset: true, season: currentSeason };
+      }
+    } else {
+      data.settings.lastSeasonReset = now.toISOString().split('T')[0];
+      data.settings.currentSeason = currentSeason;
+      const nextDate = new Date(now); nextDate.setDate(nextDate.getDate() + 21);
+      data.settings.nextLeagueDate = nextDate.toISOString().split('T')[0]; this.set(data);
+    }
+    return { reset: false };
+  },
+  checkLeague() {
+    const data = this.get(); if (!data.settings) return { triggered: false };
+    if (!data.teams || data.teams.length === 0) return { triggered: false };
+    const now = new Date(); const nextLeague = data.settings.nextLeagueDate;
+    if (!nextLeague) {
+      const nextDate = new Date(now); nextDate.setDate(nextDate.getDate() + 21);
+      data.settings.nextLeagueDate = nextDate.toISOString().split('T')[0]; this.set(data);
+      return { triggered: false };
+    }
+    if (now >= new Date(nextLeague)) {
+      const teams = [...data.teams].sort((a, b) => (b.seasonScore || 0) - (a.seasonScore || 0));
+      const rankings = teams.map((t, idx) => ({
+        teamId: t.id, teamName: t.name, rank: idx + 1,
+        points: idx === 0 ? 30 : idx === 1 ? 20 : idx === 2 ? 10 : 5
+      }));
+      rankings.forEach(r => {
+        const team = data.teams.find(t => t.id === r.teamId);
+        if (team) {
+          team.score = (team.score || 0) + r.points;
+          team.seasonScore = (team.seasonScore || 0) + r.points;
+          team.leagueHistory.push({ date: now.toISOString().split('T')[0], rank: r.rank, points: r.points });
+        }
+      });
+      this.recordLeague(rankings);
+      return { triggered: true, rankings, season: this._getCurrentSeason() };
+    }
+    return { triggered: false };
+  },
+
+
+  // ==================== 新版联赛系统 ====================
+  getLeagues() { return this.get().leagues || []; },
+  getLeagueById(id) { return (this.get().leagues || []).find(l => l.id === id) || null; },
+  getActiveLeague() {
+    const now = new Date().toISOString();
+    return (this.get().leagues || []).find(l => l.startTime <= now && l.endTime >= now) || null;
+  },
+  getUpcomingLeague() {
+    const now = new Date().toISOString();
+    return (this.get().leagues || []).find(l => l.startTime > now) || null;
+  },
+  createLeague(league) {
+    const data = this.get();
+    if (!data.leagues) data.leagues = [];
+    league.id = Date.now();
+    league.status = 'upcoming';
+    league.registrations = [];
+    league.submissions = [];
+    league.teamScores = [];
+    league.announcements = [];
+    league.createdAt = new Date().toISOString().split('T')[0];
+    data.leagues.push(league);
+    this.set(data);
+    return league;
+  },
+  updateLeague(id, updates) {
+    const data = this.get();
+    const idx = (data.leagues || []).findIndex(l => l.id === id);
+    if (idx === -1) return false;
+    data.leagues[idx] = Object.assign({}, data.leagues[idx], updates);
+    this.set(data);
+    return true;
+  },
+  deleteLeague(id) {
+    const data = this.get();
+    data.leagues = (data.leagues || []).filter(l => l.id !== id);
+    this.set(data);
+  },
+  registerForLeague(leagueId, userId, teamId) {
+    const data = this.get();
+    const league = (data.leagues || []).find(l => l.id === leagueId);
+    if (!league) return { success: false, message: '联赛不存在' };
+    if (league.status !== 'registration') return { success: false, message: '当前不在报名阶段' };
+    const now = new Date();
+    const regStart = new Date(league.registrationStart);
+    const regEnd = new Date(league.registrationEnd);
+    if (now < regStart) return { success: false, message: '报名尚未开始' };
+    if (now > regEnd) return { success: false, message: '报名已结束' };
+    if (!league.registrations) league.registrations = [];
+    if (league.registrations.some(r => r.userId === userId)) return { success: false, message: '您已报名' };
+    league.registrations.push({ userId, teamId, registeredAt: now.toISOString() });
+    this.set(data);
+    return { success: true };
+  },
+  submitLeagueCode(leagueId, userId, teamId, problemId, status, score) {
+    const data = this.get();
+    const league = (data.leagues || []).find(l => l.id === leagueId);
+    if (!league || league.status !== 'ongoing') return false;
+    if (!league.submissions) league.submissions = [];
+    // 只记录 AC 的提交，或者更新为更好的成绩
+    const existing = league.submissions.find(s => s.userId === userId && s.problemId === problemId);
+    if (existing) {
+      if (score > existing.score) {
+        existing.status = status;
+        existing.score = score;
+        existing.submitTime = new Date().toISOString();
+      }
+    } else {
+      league.submissions.push({ userId, teamId, problemId, status, score, submitTime: new Date().toISOString() });
+    }
+    this._recalcLeagueScores(league);
+    this.set(data);
+    return true;
+  },
+  _recalcLeagueScores(league) {
+    if (!league.submissions) league.submissions = [];
+    const teamMap = {};
+    league.submissions.forEach(s => {
+      if (s.status === 'AC') {
+        if (!teamMap[s.teamId]) teamMap[s.teamId] = { teamId: s.teamId, totalScore: 0, solvedProblems: new Set() };
+        if (!teamMap[s.teamId].solvedProblems.has(s.problemId)) {
+          teamMap[s.teamId].totalScore += s.score;
+          teamMap[s.teamId].solvedProblems.add(s.problemId);
+        }
+      }
+    });
+    let scores = Object.values(teamMap).map(t => ({ teamId: t.teamId, totalScore: t.totalScore, solvedCount: t.solvedProblems.size }));
+    scores.sort((a, b) => b.totalScore - a.totalScore || a.solvedCount - b.solvedCount);
+    league.teamScores = scores.map((s, idx) => ({ ...s, rank: idx + 1 }));
+  },
+  getLeagueLeaderboard(leagueId) {
+    const league = this.getLeagueById(leagueId);
+    if (!league) return [];
+    this._recalcLeagueScores(league);
+    return league.teamScores || [];
+  },
+  addLeagueAnnouncement(leagueId, content, authorId) {
+    const data = this.get();
+    const league = (data.leagues || []).find(l => l.id === leagueId);
+    if (!league) return false;
+    if (!league.announcements) league.announcements = [];
+    league.announcements.push({
+      id: Date.now(), content, authorId,
+      time: new Date().toISOString()
+    });
+    this.set(data);
+    return true;
+  },
+  checkLeagueStatus() {
+    const data = this.get();
+    const now = new Date();
+    let changed = false;
+    (data.leagues || []).forEach(l => {
+      const start = new Date(l.startTime);
+      const end = new Date(l.endTime);
+      const regStart = new Date(l.registrationStart);
+      const regEnd = new Date(l.registrationEnd);
+      let newStatus = l.status;
+      if (now >= regStart && now < regEnd && l.status === 'upcoming') {
+        newStatus = 'registration';
+      } else if (now >= start && now <= end && l.status !== 'ongoing') {
+        newStatus = 'ongoing';
+      } else if (now > end && l.status !== 'ended') {
+        newStatus = 'ended';
+        // 结算积分
+        if (!l.settled) {
+          this._settleLeague(l);
+          l.settled = true;
+          changed = true;
+        }
+      }
+      if (newStatus !== l.status) {
+        l.status = newStatus;
+        changed = true;
+      }
+    });
+    if (changed) this.set(data);
+  },
+  _settleLeague(league) {
+    if (!league.teamScores || league.teamScores.length === 0) return;
+    const data = this.get();
+    league.teamScores.forEach((s, idx) => {
+      const team = (data.teams || []).find(t => t.id === s.teamId);
+      if (team) {
+        const points = idx === 0 ? 30 : idx === 1 ? 20 : idx === 2 ? 10 : 5;
+        team.score = (team.score || 0) + points;
+        team.seasonScore = (team.seasonScore || 0) + points;
+        team.leagueHistory = team.leagueHistory || [];
+        team.leagueHistory.push({ date: new Date().toISOString().split('T')[0], rank: s.rank, points });
+      }
+    });
+    // 同时记录到旧版 teamLeagues 兼容
+    if (!data.teamLeagues) data.teamLeagues = [];
+    data.teamLeagues.unshift({
+      id: Date.now(), season: this._getCurrentSeason(),
+      date: new Date().toISOString().split('T')[0],
+      rankings: league.teamScores.map(s => {
+        const team = (data.teams || []).find(t => t.id === s.teamId);
+        const points = s.rank === 1 ? 30 : s.rank === 2 ? 20 : s.rank === 3 ? 10 : 5;
+        return { teamId: s.teamId, teamName: team ? team.name : '未知', rank: s.rank, points };
+      })
+    });
+  },
+  getUserLeagueRegistrations(userId) {
+    const regs = [];
+    (this.get().leagues || []).forEach(l => {
+      if (l.registrations && l.registrations.some(r => r.userId === userId)) {
+        regs.push(l.id);
+      }
+    });
+    return regs;
+  },
+};
+const Auth = {
+  SESSION_KEY: 'cpp_oj_session_v3',
+  currentUser: null,
+
+  init() {
+    console.log('[Auth] 检查会话...');
+    try {
+      const session = this.getSession();
+      if (!session || !session.userId) return false;
+      const user = DB.getUserById(session.userId);
+      if (!user) { localStorage.removeItem(this.SESSION_KEY); return false; }
+      console.log('[Auth] 自动登录:', user.username);
+      this.currentUser = user;
+      return true;
+    } catch(e) { console.error('[Auth] 初始化错误:', e); return false; }
+  },
+
+  login() {
+    console.log('[Auth] ====== 登录开始 ======');
+    const usernameInput = document.getElementById('login-username');
+    const passwordInput = document.getElementById('login-password');
+    const btn = document.getElementById('login-btn');
+
+    if (!usernameInput || !passwordInput) {
+      console.error('[Auth] 表单元素未找到');
+      return;
+    }
+
+    const username = usernameInput.value.trim();
+    const password = passwordInput.value;
+
+    console.log('[Auth] 用户名:', username, '| 密码长度:', password.length, '| 密码内容:', JSON.stringify(password));
+
+    if (!username || !password) {
+      this.showError('请填写用户名和密码');
+      return;
+    }
+
+    btn.disabled = true;
+    const originalText = btn.innerHTML;
+    btn.innerHTML = '<span style="display:inline-block;width:16px;height:16px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin 1s linear infinite;vertical-align:middle;margin-right:8px"></span> 登录中...';
+
+    setTimeout(() => {
+      // ========== 默认账号硬编码直通验证 ==========
+      if (username === 'wanglize' && password === 'wanglize20140325') {
+        console.log('[Auth] 默认账号直通验证通过');
+        let user = DB.getUser('wanglize');
+        if (!user) {
+          console.warn('[Auth] 数据库中无默认用户，尝试修复...');
+          const data = DB.get();
+          if (!data.users) data.users = [];
+          const idx = data.users.findIndex(u => u && u.username === 'wanglize');
+          if (idx >= 0) {
+            data.users[idx] = { id: 1, username: 'wanglize', password: 'wanglize20140325', role: 'admin', nickname: 'wanglize', createdAt: '2026-08-07', lastLogin: null };
+          } else {
+            data.users.unshift({ id: 1, username: 'wanglize', password: 'wanglize20140325', role: 'admin', nickname: 'wanglize', createdAt: '2026-08-07', lastLogin: null });
+          }
+          DB.set(data);
+          user = DB.getUser('wanglize');
+        }
+        if (!user) {
+          console.error('[Auth] 数据库彻底损坏，使用内存兜底对象');
+          user = { id: 1, username: 'wanglize', password: 'wanglize20140325', role: 'admin', nickname: 'wanglize', createdAt: '2026-08-07', lastLogin: null };
+        }
+        this.currentUser = user;
+        this.setSession({ userId: user.id, username: user.username, role: user.role, loginAt: Date.now() });
+        UI.toast('欢迎回来，' + (user.nickname || user.username) + '！');
+        App.start();
+        return;
+      }
+
+      // ========== 普通账号数据库验证 ==========
+      const user = DB.getUser(username);
+      if (!user) {
+        console.warn('[Auth] 用户不存在:', username);
+        this.showError('用户名不存在');
+        btn.disabled = false;
+        btn.innerHTML = originalText;
+        return;
+      }
+      if (user.password !== password) {
+        console.warn('[Auth] 密码不匹配');
+        this.showError('密码错误，请重试');
+        btn.disabled = false;
+        btn.innerHTML = originalText;
+        return;
+      }
+      this.currentUser = user;
+      this.setSession({ userId: user.id, username: user.username, role: user.role, loginAt: Date.now() });
+      try {
+        const data = DB.get();
+        const u = data.users.find(u => u.id === user.id);
+        if (u) { u.lastLogin = new Date().toISOString(); DB.set(data); }
+      } catch(e) { console.warn('[Auth] 更新登录时间失败:', e); }
+      UI.toast('欢迎回来，' + (user.nickname || user.username) + '！');
+      App.start();
+    }, 600);
+  },
+
+  showError(msg) {
+    const box = document.getElementById('login-error');
+    const text = document.getElementById('login-error-text');
+    text.textContent = msg;
+    box.classList.add('show');
+    setTimeout(() => box.classList.remove('show'), 4000);
+  },
+
+  showReset() {
+    document.getElementById('login-form').style.display = 'none';
+    document.getElementById('register-form').style.display = 'none';
+    document.getElementById('reset-form').style.display = 'block';
+  },
+
+  resetPassword() {
+    const adminPwd = document.getElementById('reset-admin-pwd').value;
+    const newPwd = document.getElementById('reset-new-pwd').value;
+    if (adminPwd !== 'wanglize20140325') { UI.toast('管理员密码错误', 'error'); return; }
+    if (!newPwd || newPwd.length < 6) { UI.toast('新密码至少6位', 'error'); return; }
+    const data = DB.get();
+    const user = data.users.find(u => u.username === 'wanglize');
+    if (user) { user.password = newPwd; DB.set(data); UI.toast('密码重置成功！请用新密码登录'); UI.showLogin(); }
+  },
+
+  register() {
+    try {
+      const username = (document.getElementById('reg-username').value || '').trim();
+      const password = document.getElementById('reg-password').value || '';
+      const password2 = document.getElementById('reg-password2').value || '';
+      if (!username || !password) { UI.toast('请填写完整信息', 'error'); return; }
+      if (password !== password2) { UI.toast('两次密码不一致', 'error'); return; }
+      if (password.length < 6) { UI.toast('密码至少6位', 'error'); return; }
+      const user = DB.createUser(username, password);
+      if (!user) { UI.toast('用户名已存在', 'error'); return; }
+      UI.toast('注册成功！请登录');
+      UI.showLogin();
+    } catch(e) { UI.toast('注册出错', 'error'); }
+  },
+
+  logout() {
+    localStorage.removeItem(this.SESSION_KEY);
+    location.reload();
+  },
+
+  getSession() {
+    try { return JSON.parse(localStorage.getItem(this.SESSION_KEY)); } catch(e) { return null; }
+  },
+
+  setSession(session) {
+    try { localStorage.setItem(this.SESSION_KEY, JSON.stringify(session)); } catch(e) { console.error('[Auth] 保存会话失败:', e); }
+  },
+
+  isAdmin() { return this.currentUser && this.currentUser.role === 'admin'; },
+
+  diagnose() {
+    console.log('[Auth] 执行诊断...');
+    const output = document.getElementById('diagnostic-output');
+    output.style.display = 'block';
+    let report = '=== 登录诊断报告 ===\n';
+    report += '时间: ' + new Date().toLocaleString() + '\n\n';
+    try {
+      localStorage.setItem('_test_', '1');
+      localStorage.removeItem('_test_');
+      report += '[OK] localStorage 可用\n';
+    } catch(e) {
+      report += '[FAIL] localStorage 不可用: ' + e.message + '\n';
+      output.innerText = report; return;
+    }
+    const raw = localStorage.getItem(DB.KEY);
+    if (!raw) { report += '[FAIL] 数据库不存在\n'; output.innerText = report; return; }
+    report += '[OK] 数据库存在，大小: ' + raw.length + ' 字节\n';
+    let data;
+    try { data = JSON.parse(raw); report += '[OK] 数据库可解析\n'; }
+    catch(e) { report += '[FAIL] 解析失败: ' + e.message + '\n'; output.innerText = report; return; }
+    if (!Array.isArray(data.users)) { report += '[FAIL] users 不是数组\n'; output.innerText = report; return; }
+    report += '[OK] 用户数组存在，长度: ' + data.users.length + '\n';
+    let preset = data.users.find(u => u && u.username === 'wanglize');
+    if (!preset) { report += '[FAIL] 预置账号 wanglize 不存在\n\n建议: 点击"重置系统数据"按钮\n'; output.innerText = report; return; }
+    report += '[OK] 预置账号存在\n';
+    report += '  ID: ' + preset.id + '\n';
+    report += '  用户名: ' + preset.username + '\n';
+    report += '  密码长度: ' + preset.password.length + '\n';
+    report += '  密码内容: ' + JSON.stringify(preset.password) + '\n';
+    report += '  角色: ' + preset.role + '\n';
+    const usernameInput = document.getElementById('login-username');
+    const passwordInput = document.getElementById('login-password');
+    if (usernameInput && passwordInput) {
+      report += '\n[OK] 输入框存在\n';
+      report += '  用户名值: ' + JSON.stringify(usernameInput.value) + '\n';
+      report += '  密码长度: ' + passwordInput.value.length + '\n';
+      report += '  密码内容: ' + JSON.stringify(passwordInput.value) + '\n';
+      if (preset.password === passwordInput.value) {
+        report += '\n[OK] 密码完全匹配！应该可以正常登录\n';
+      } else {
+        report += '\n[FAIL] 密码不匹配！\n';
+        report += '  请检查输入框中的密码是否正确\n';
+      }
+    } else { report += '\n[FAIL] 输入框不存在\n'; }
+    output.innerText = report;
+    console.log('[Auth] 诊断完成');
+  },
+
+  emergencyLogin() {
+    console.log('[Auth] 执行紧急登录...');
+    try {
+      const user = { id: 1, username: 'wanglize', password: 'wanglize20140325', role: 'admin', nickname: 'wanglize', createdAt: '2026-08-07', lastLogin: null };
+      try { DB.reset(); } catch(e) { console.warn('[Auth] DB.reset 失败，忽略:', e); }
+      this.currentUser = user;
+      this.setSession({ userId: user.id, username: user.username, role: user.role, loginAt: Date.now() });
+      console.log('[Auth] 紧急登录成功，用户:', user.username);
+      UI.toast('⚡ 紧急登录成功！');
+      App.start();
+    } catch(e) { console.error('[Auth] 紧急登录失败:', e); alert('紧急登录失败: ' + (e.message || '未知错误')); }
+  }
+};
+
+// ==================== Markdown解析器 ====================
+const Markdown = {
+  escapeHtml(text) {
+    return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  },
+  parse(text) {
+    if (!text) return '';
+    let html = this.escapeHtml(text);
+    html = html.replace(/```cpp\n([\s\S]*?)```/g, '<pre><code>$1</code></pre>');
+    html = html.replace(/```\n([\s\S]*?)```/g, '<pre><code>$1</code></pre>');
+    html = html.replace(/^###### (.*$)/gim, '<h6>$1</h6>');
+    html = html.replace(/^##### (.*$)/gim, '<h5>$1</h5>');
+    html = html.replace(/^#### (.*$)/gim, '<h4>$1</h4>');
+    html = html.replace(/^### (.*$)/gim, '<h3>$1</h3>');
+    html = html.replace(/^## (.*$)/gim, '<h2 style="color:#a0c4ff">$1</h2>');
+    html = html.replace(/^# (.*$)/gim, '<h1 style="color:var(--accent)">$1</h1>');
+    html = html.replace(/\*\*\*(.*?)\*\*\*/gim, '<b><i>$1</i></b>');
+    html = html.replace(/\*\*(.*?)\*\*/gim, '<b style="color:#a0c4ff">$1</b>');
+    html = html.replace(/\*(.*?)\*/gim, '<i>$1</i>');
+    html = html.replace(/`([^`]+)`/gim, '<code>$1</code>');
+    html = html.replace(/^&gt; (.*$)/gim, '<blockquote>$1</blockquote>');
+    html = html.replace(/\n/gim, '<br>');
+    return html;
+  }
+};
+
+// ==================== 评测引擎 ====================
+const Judge = {
+  async judge(problem, code, language) {
+    language = language || 'cpp';
+    await this.delay(500);
+    if (!code.includes('int main') && !code.includes('main()')) {
+      return { status: 'CE', message: '错误：未找到 main 函数', time: 0, memory: 0, details: [] };
+    }
+    if (code.includes('system(') || code.includes('fork(') || code.includes('exec(')) {
+      return { status: 'CE', message: '错误：包含非法系统调用', time: 0, memory: 0, details: [] };
+    }
+    await this.delay(800);
+    const details = [];
+    let passed = 0;
+    for (let i = 0; i < problem.testCases.length; i++) {
+      const tc = problem.testCases[i];
+      await this.delay(300 + Math.random() * 500);
+      const result = this.runTest(problem, code, tc, i);
+      details.push(result);
+      if (result.pass) passed++;
+    }
+    const total = problem.testCases.length;
+    let status, time, memory;
+    if (passed === total) {
+      status = 'AC';
+      time = Math.floor(Math.random() * problem.timeLimit * 0.3) + 10;
+      memory = Math.floor(Math.random() * problem.memoryLimit * 0.2) + 4;
+    } else {
+      status = 'WA';
+      time = Math.floor(Math.random() * problem.timeLimit * 0.5) + 10;
+      memory = Math.floor(Math.random() * problem.memoryLimit * 0.3) + 4;
+    }
+    return { status, time, memory, passed, total, details, message: passed === total ? 'Accepted' : 'Wrong Answer on test ' + (details.findIndex(d => !d.pass) + 1) };
+  },
+  runTest(problem, code, tc, idx) {
+    const input = tc.input.trim();
+    const expected = tc.output.trim();
+    let output = '';
+    let pass = false;
+    try {
+      if (problem.id === 1) {
+        const nums = input.split(/\s+/).map(Number);
+        if (nums.length >= 2) { output = String(nums[0] + nums[1]); pass = output === expected; }
+      } else if (problem.id === 2) {
+        const n = parseInt(input);
+        if (n < 2) output = 'No';
+        else { let isP = true; for (let i = 2; i * i <= n; i++) if (n % i === 0) { isP = false; break; } output = isP ? 'Yes' : 'No'; }
+        pass = output === expected;
+      } else if (problem.id === 3) {
+        const n = parseInt(input);
+        if (n <= 2) output = '1';
+        else { let a = 1, b = 1, c; for (let i = 3; i <= n; i++) { c = a + b; a = b; b = c; } output = String(b); }
+        pass = output === expected;
+      } else if (problem.id === 4) {
+        const parts = input.split(/\s+/).map(Number);
+        const a = parts[0], b = parts[1], p = parts[2];
+        let res = 1 % p, base = a % p, exp = b;
+        while (exp > 0) { if (exp & 1) res = (res * base) % p; base = (base * base) % p; exp >>= 1; }
+        output = String(res);
+        pass = output === expected;
+      } else {
+        const sim = this.similarity(code, problem.standardCode || '');
+        pass = sim > 0.5 || code.length > 100;
+        output = pass ? expected : 'wrong_output';
+      }
+    } catch(e) { output = 'Runtime Error'; pass = false; }
+    const time = Math.floor(Math.random() * 100) + 5;
+    const memory = Math.floor(Math.random() * 16) + 2;
+    return { id: idx + 1, input: tc.input, expected, output, pass, time, memory };
+  },
+  similarity(a, b) {
+    if (!a || !b) return 0;
+    const clean = s => s.replace(/\s+/g, '').replace(/\/\/.*|\/\*[\s\S]*?\*\//g, '');
+    const ca = clean(a), cb = clean(b);
+    if (!ca || !cb) return 0;
+    let common = 0;
+    const minLen = Math.min(ca.length, cb.length);
+    for (let i = 0; i < minLen; i++) if (ca[i] === cb[i]) common++;
+    return common / Math.max(ca.length, cb.length);
+  },
+  delay(ms) { return new Promise(r => setTimeout(r, ms)); }
+};
+
+// ==================== UI渲染器 ====================
+const UI = {
+  toastContainer: document.getElementById('toast-container'),
+  toast(message, type, duration) {
+    type = type || 'success';
+    duration = duration || 2500;
+    const el = document.createElement('div');
+    el.className = 'toast toast-' + type;
+    el.textContent = message;
+    this.toastContainer.appendChild(el);
+    requestAnimationFrame(() => el.classList.add('show'));
+    setTimeout(() => {
+      el.classList.remove('show');
+      setTimeout(() => el.remove(), 300);
+    }, duration);
+  },
+  showLogin() {
+    document.getElementById('login-form').style.display = 'block';
+    document.getElementById('register-form').style.display = 'none';
+    document.getElementById('reset-form').style.display = 'none';
+    document.getElementById('login-error').classList.remove('show');
+  },
+  showRegister() {
+    document.getElementById('login-form').style.display = 'none';
+    document.getElementById('register-form').style.display = 'block';
+    document.getElementById('reset-form').style.display = 'none';
+  },
+  openModal(html) {
+    document.getElementById('modal-content').innerHTML = '<button class="modal-close" onclick="UI.closeModal()">&times;</button>' + html;
+    document.getElementById('generic-modal').classList.add('active');
+  },
+  closeModal() {
+    document.getElementById('generic-modal').classList.remove('active');
+  },
+  renderPage(page) {
+    const container = document.getElementById('main-content');
+    const pages = {
+      dashboard: () => UI.renderDashboard(),
+      problems: () => UI.renderProblems(),
+      'problem-detail': () => UI.renderProblemDetail(),
+      submissions: () => UI.renderSubmissions(),
+      'ac-codes': () => UI.renderAcCodes(),
+      notes: () => UI.renderNotes(),
+      'note-editor': () => UI.renderNoteEditor(),
+      files: () => UI.renderFiles(),
+      'admin-users': () => UI.renderAdminUsers(),
+      'admin-problems': () => UI.renderAdminProblems(),
+      'admin-problem-edit': () => UI.renderAdminProblemEdit(),
+      'admin-league': () => UI.renderAdminLeague(),
+      'league-detail': () => UI.renderLeagueDetail(),
+      profile: () => UI.renderProfile(),
+      teams: () => UI.renderTeams(),
+      'team-detail': () => UI.renderTeamDetail(),
+      league: () => UI.renderLeague()
+    };
+    if (pages[page]) container.innerHTML = pages[page]();
+    this.bindPageEvents(page);
+  },
+
+
+  renderTeams() {
+    const teams = DB.getTeams(); const user = Auth.currentUser;
+    const userTeam = user ? DB.getTeamByUserId(user.id) : null;
+    const isAdmin = Auth.isAdmin(); const canCreate = isAdmin && teams.length < 3;
+    return `
+      <div class="page-header">
+        <div class="page-title">🛡️ 战队中心</div>
+        <div class="page-actions">${canCreate ? '<button class="btn btn-primary" onclick="App.showCreateTeam()">+ 创建战队</button>' : ''}</div>
+      </div>
+      <div class="stats-grid">
+        <div class="stat-card"><div class="stat-value" style="color:var(--accent)">${teams.length}</div><div class="stat-label">战队总数</div></div>
+        <div class="stat-card"><div class="stat-value" style="color:var(--info)">${teams.length > 0 ? Math.max(...teams.map(t => t.members ? t.members.length : 0)) : 0}</div><div class="stat-label">最多成员</div></div>
+        <div class="stat-card"><div class="stat-value" style="color:var(--ok)">${userTeam ? '已加入' : '未加入'}</div><div class="stat-label">我的状态</div></div>
+      </div>
+      ${teams.length === 0 ? '<div class="card" style="text-align:center;padding:60px;color:var(--text2)"><div style="font-size:48px;margin-bottom:12px">🛡️</div><div>暂无战队，管理员可创建</div></div>' : ''}
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:20px">
+        ${teams.map(t => {
+          const leader = DB.getUserById(t.leaderId);
+          const isMember = user && t.members && t.members.includes(user.id);
+          const isFull = t.members && t.members.length >= 5;
+          return `<div class="card" style="border-left:4px solid var(--accent)">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+              <div style="font-size:20px;font-weight:700">${t.name}</div><span class="tag tag-primary">Lv.${t.members ? t.members.length : 0}人</span>
+            </div>
+            <div style="font-size:13px;color:var(--text2);margin-bottom:8px">队长: ${leader ? (leader.nickname || leader.username) : '未知'}</div>
+            <div style="font-size:13px;color:var(--text2);margin-bottom:8px">赛季积分: <span style="color:var(--warn);font-weight:700">${t.seasonScore || 0}</span></div>
+            <div style="font-size:13px;color:var(--text2);margin-bottom:12px">总积分: ${t.score || 0}</div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">${(t.members || []).map(mid => { const member = DB.getUserById(mid); return '<span class="tag">' + (member ? (member.nickname || member.username) : '未知') + '</span>'; }).join('')}</div>
+            <div style="display:flex;gap:8px">
+              <button class="btn btn-secondary btn-sm" onclick="App.viewTeam(${t.id})">详情</button>
+              ${!userTeam && !isFull ? '<button class="btn btn-primary btn-sm" onclick="App.joinTeam(' + t.id + ')">加入</button>' : ''}
+              ${isMember && !isAdmin ? '<button class="btn btn-sm" style="background:var(--accent);color:white" onclick="App.leaveTeam()">退出</button>' : ''}
+              ${isAdmin ? '<button class="btn btn-sm" style="background:var(--accent);color:white" onclick="App.deleteTeam(' + t.id + ')">解散</button>' : ''}
+            </div>
+          </div>`;
+        }).join('')}
+      </div>`;
+  },
+
+  renderTeamDetail() {
+    const team = DB.getTeamById(App.currentTeamId);
+    if (!team) return '<div class="page-title">战队不存在</div>';
+    const leader = DB.getUserById(team.leaderId); const user = Auth.currentUser;
+    const isMember = user && team.members && team.members.includes(user.id);
+    return `
+      <div class="page-header">
+        <div class="page-title">🛡️ ${team.name}</div>
+        <div class="page-actions">
+          <button class="btn btn-secondary btn-sm" onclick="App.navigate('teams')">← 返回</button>
+          ${isMember && !Auth.isAdmin() ? '<button class="btn btn-sm" style="background:var(--accent);color:white" onclick="App.leaveTeam()">退出战队</button>' : ''}
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+        <div class="card">
+          <div class="card-header"><div class="card-title">📋 战队信息</div></div>
+          <div style="margin-bottom:12px"><strong>队长:</strong> ${leader ? (leader.nickname || leader.username) : '未知'}</div>
+          <div style="margin-bottom:12px"><strong>成员数:</strong> ${team.members ? team.members.length : 0}</div>
+          <div style="margin-bottom:12px"><strong>赛季积分:</strong> <span style="color:var(--warn);font-size:20px;font-weight:700">${team.seasonScore || 0}</span></div>
+          <div style="margin-bottom:12px"><strong>总积分:</strong> ${team.score || 0}</div>
+          <div style="margin-bottom:12px"><strong>创建时间:</strong> ${team.createdAt}</div>
+          <div><strong>成员列表:</strong></div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px">${(team.members || []).map(mid => { const member = DB.getUserById(mid); const isLeader = mid === team.leaderId; return '<span class="tag ' + (isLeader ? 'tag-primary' : 'tag-info') + '">' + (member ? (member.nickname || member.username) : '未知') + (isLeader ? ' 👑' : '') + '</span>'; }).join('')}</div>
+        </div>
+        <div class="card">
+          <div class="card-header"><div class="card-title">📊 联赛记录</div></div>
+          ${(team.leagueHistory || []).length === 0 ? '<div style="color:var(--text2);padding:20px;text-align:center">暂无联赛记录</div>' : ''}
+          ${(team.leagueHistory || []).slice().reverse().map(h => '<div style="padding:10px 0;border-bottom:1px solid var(--border);display:flex;justify-content:space-between"><span>第' + h.rank + '名</span><span style="color:var(--ok);font-weight:700">+' + h.points + '分</span><span style="color:var(--text2);font-size:12px">' + h.date + '</span></div>').join('')}
+        </div>
+      </div>`;
+  },
+
+  renderLeague() {
+    DB.checkLeagueStatus();
+    const leagues = DB.getLeagues();
+    const user = Auth.currentUser;
+    const userTeam = user ? DB.getTeamByUserId(user.id) : null;
+    const now = new Date();
+
+    // 分离不同状态的联赛
+    const upcoming = leagues.filter(l => l.status === 'upcoming' || l.status === 'registration');
+    const ongoing = leagues.filter(l => l.status === 'ongoing');
+    const ended = leagues.filter(l => l.status === 'ended');
+
+    return `
+      <div class="page-header">
+        <div class="page-title">🏆 跨战队联赛</div>
+        <div class="page-actions">
+          ${Auth.isAdmin() ? '<button class="btn btn-primary" onclick="App.navigate(&#39;admin-league&#39;)">⚙️ 联赛管理</button>' : ''}
+        </div>
+      </div>
+
+      ${ongoing.length > 0 ? `
+      <div class="card" style="border:2px solid var(--ok);animation:ac1 2s infinite;margin-bottom:20px">
+        <div class="card-header">
+          <div class="card-title">🔥 正在进行中的联赛</div>
+          <span class="tag tag-success">进行中</span>
+        </div>
+        ${ongoing.map(l => `
+          <div style="margin-bottom:16px;padding:16px;background:rgba(16,185,129,.05);border-radius:12px;border:1px solid rgba(16,185,129,.2)">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+              <div style="font-size:20px;font-weight:700">${l.name}</div>
+              <span class="tag tag-success">进行中</span>
+            </div>
+            <div style="font-size:13px;color:var(--text2);margin-bottom:8px">
+              比赛时间: ${new Date(l.startTime).toLocaleString()} ~ ${new Date(l.endTime).toLocaleString()}
+            </div>
+            <div style="font-size:13px;color:var(--text2);margin-bottom:12px">
+              题目数: ${l.problemIds ? l.problemIds.length : 0} 题 | 已报名: ${l.registrations ? l.registrations.length : 0} 人
+            </div>
+            <div style="display:flex;gap:10px">
+              <button class="btn btn-primary" onclick="App.viewLeague(${l.id})">🏁 进入比赛</button>
+              <button class="btn btn-secondary" onclick="App.viewLeagueLeaderboard(${l.id})">📊 实时榜</button>
+            </div>
+          </div>
+        `).join('')}
+      </div>` : ''}
+
+      ${upcoming.length > 0 ? `
+      <div class="card" style="margin-bottom:20px">
+        <div class="card-header"><div class="card-title">📅 即将开始的联赛</div></div>
+        ${upcoming.map(l => {
+          const regStart = new Date(l.registrationStart);
+          const regEnd = new Date(l.registrationEnd);
+          const isRegOpen = now >= regStart && now <= regEnd;
+          const isRegistered = l.registrations && l.registrations.some(r => r.userId === user.id);
+          return `
+          <div style="margin-bottom:16px;padding:16px;background:rgba(255,255,255,.02);border-radius:12px;border:1px solid var(--border)">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+              <div style="font-size:18px;font-weight:700">${l.name}</div>
+              <span class="tag ${isRegOpen ? 'tag-success' : 'tag-info'}">${isRegOpen ? '报名中' : l.status === 'upcoming' ? '即将报名' : '报名截止'}</span>
+            </div>
+            <div style="font-size:13px;color:var(--text2);margin-bottom:6px">比赛时间: ${new Date(l.startTime).toLocaleString()} ~ ${new Date(l.endTime).toLocaleString()}</div>
+            <div style="font-size:13px;color:var(--text2);margin-bottom:6px">报名时间: ${regStart.toLocaleString()} ~ ${regEnd.toLocaleString()}</div>
+            <div style="font-size:13px;color:var(--text2);margin-bottom:12px">题目数: ${l.problemIds ? l.problemIds.length : 0} 题 | 已报名: ${l.registrations ? l.registrations.length : 0} 人</div>
+            ${l.announcements && l.announcements.length > 0 ? `
+            <div style="background:rgba(59,130,246,.08);border-left:3px solid var(--info);padding:10px 14px;border-radius:8px;margin-bottom:12px">
+              <div style="font-size:12px;color:var(--info);font-weight:600;margin-bottom:4px">📢 公告</div>
+              ${l.announcements.slice(-1).map(a => `<div style="font-size:13px;color:var(--text)">${a.content}</div><div style="font-size:11px;color:var(--text2);margin-top:4px">${new Date(a.time).toLocaleString()}</div>`).join('')}
+            </div>` : ''}
+            <div style="display:flex;gap:10px">
+              ${isRegOpen && userTeam && !isRegistered ? `<button class="btn btn-success" onclick="App.registerLeague(${l.id})">✋ 报名参赛</button>` : ''}
+              ${isRegOpen && isRegistered ? `<span class="tag tag-success">✓ 已报名</span>` : ''}
+              ${!userTeam && isRegOpen ? `<span style="font-size:12px;color:var(--text2)">请先加入战队</span>` : ''}
+              <button class="btn btn-secondary btn-sm" onclick="App.viewLeague(${l.id})">详情</button>
+            </div>
+          </div>`;
+        }).join('')}
+      </div>` : ''}
+
+      ${ended.length > 0 ? `
+      <div class="card" style="margin-bottom:20px">
+        <div class="card-header"><div class="card-title">📜 已结束的联赛</div></div>
+        ${ended.slice(0, 5).map(l => `
+          <div style="padding:12px 0;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center">
+            <div>
+              <div style="font-weight:600">${l.name}</div>
+              <div style="font-size:12px;color:var(--text2)">${new Date(l.startTime).toLocaleDateString()} · ${l.problemIds ? l.problemIds.length : 0}题 · ${l.registrations ? l.registrations.length : 0}人报名</div>
+            </div>
+            <button class="btn btn-secondary btn-sm" onclick="App.viewLeague(${l.id})">查看结果</button>
+          </div>
+        `).join('')}
+      </div>` : ''}
+
+      ${leagues.length === 0 ? `
+      <div class="card" style="text-align:center;padding:60px;color:var(--text2)">
+        <div style="font-size:48px;margin-bottom:12px">🏆</div>
+        <div style="font-size:18px;font-weight:600;margin-bottom:8px">暂无联赛</div>
+        <div style="font-size:14px">联赛将由管理员定期创建</div>
+      </div>` : ''}
+    `;
+  },
+
+  renderDashboard() {
+    const user = Auth.currentUser;
+    const subs = DB.getSubmissions(user.id);
+    const acCount = subs.filter(s => s.status === 'AC').length;
+    const notes = DB.getNotes(user.id);
+    const problems = DB.getProblems();
+    const acSet = new Set();
+    subs.filter(s => s.status === 'AC').forEach(s => acSet.add(s.problemId));
+    const acProblems = acSet.size;
+    return `
+      <div class="page-header">
+        <div class="page-title">📊 仪表盘</div>
+        <div class="page-actions">
+          <button class="btn btn-secondary btn-sm" onclick="App.exportData()">📦 导出数据</button>
+          <button class="btn btn-secondary btn-sm" onclick="document.getElementById('import-file').click()">📥 导入</button>
+          <input type="file" id="import-file" style="display:none" accept=".json" onchange="App.importData(this)">
+        </div>
+      </div>
+      <div class="stats-grid">
+        <div class="stat-card"><div class="stat-value" style="color:var(--accent)">${subs.length}</div><div class="stat-label">总提交</div></div>
+        <div class="stat-card"><div class="stat-value" style="color:var(--ok)">${acCount}</div><div class="stat-label">AC 数量</div></div>
+        <div class="stat-card"><div class="stat-value" style="color:var(--info)">${acProblems}</div><div class="stat-label">通过题数</div></div>
+        <div class="stat-card"><div class="stat-value" style="color:var(--warn)">${notes.length}</div><div class="stat-label">笔记数量</div></div>
+        <div class="stat-card"><div class="stat-value" style="color:#9b59b6">${problems.length}</div><div class="stat-label">题库总量</div></div>
+        <div class="stat-card"><div class="stat-value" style="color:#1abc9c">${Math.round((acProblems / Math.max(problems.length,1)) * 100)}%</div><div class="stat-label">通过率</div></div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+        <div class="card">
+          <div class="card-header"><div class="card-title">📝 最近提交</div></div>
+          ${subs.slice(0, 5).map(s => {
+            const p = DB.getProblem(s.problemId);
+            return '<div style="padding:10px 0;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center"><div><div style="font-weight:500">' + (p ? p.title : '未知题目') + '</div><div style="font-size:12px;color:var(--text2)">' + s.submitTime.split('T')[0] + '</div></div><span class="status-' + s.status.toLowerCase() + '">' + s.status + '</span></div>';
+          }).join('') || '<div style="color:var(--text2);text-align:center;padding:20px">暂无提交记录</div>'}
+        </div>
+        <div class="card">
+          <div class="card-header"><div class="card-title">📚 最近笔记</div></div>
+          ${notes.slice().reverse().slice(0, 5).map(n => {
+            return '<div style="padding:10px 0;border-bottom:1px solid var(--border);cursor:pointer" onclick="App.navigate(&#39;notes&#39;);setTimeout(()=>App.openNote(' + n.id + '),100)"><div style="font-weight:500">' + n.title + '</div><div style="font-size:12px;color:var(--text2)">' + n.createdAt + ' · ' + n.tags.map(t=>'<span class="tag tag-info">' + t + '</span>').join('') + '</div></div>';
+          }).join('') || '<div style="color:var(--text2);text-align:center;padding:20px">暂无笔记</div>'}
+        </div>
+      </div>`;
+  },
+
+  renderProblems() {
+    const problems = DB.getProblems();
+    return `
+      <div class="page-header">
+        <div class="page-title">📚 题库</div>
+        <div class="page-actions"><input type="text" class="search-box" id="problem-search" placeholder="搜索题目..." style="margin:0" oninput="UI.filterProblems()"></div>
+      </div>
+      <div class="filter-bar">
+        <span style="color:var(--text2);font-size:13px">难度:</span>
+        ${['全部','1','2','3','4','5','6','7','8','9','10'].map(d => {
+          return '<button class="filter-chip" data-diff="' + d + '" onclick="UI.setProblemFilter(&#39;' + d + '&#39;)">' + (d === '全部' ? d : 'Lv.' + d) + '</button>';
+        }).join('')}
+      </div>
+      <div class="card" style="padding:0;overflow:hidden">
+        <table class="data-table" id="problems-table">
+          <thead><tr><th style="width:60px">状态</th><th>题目</th><th style="width:80px">难度</th><th style="width:100px">通过率</th><th style="width:120px">标签</th></tr></thead>
+          <tbody>${problems.map(p => UI.renderProblemRow(p)).join('')}</tbody>
+        </table>
+      </div>`;
+  },
+
+  renderProblemRow(p) {
+    const subs = DB.getSubmissions().filter(s => s.problemId === p.id);
+    const acSubs = subs.filter(s => s.status === 'AC');
+    const rate = subs.length ? Math.round((acSubs.length / subs.length) * 100) : 0;
+    const userAC = Auth.currentUser && subs.some(s => s.userId === Auth.currentUser.id && s.status === 'AC');
+    return '<tr onclick="App.viewProblem(' + p.id + ')"><td>' + (userAC ? '<span style="color:var(--ok);font-size:18px">✓</span>' : '<span style="color:var(--border);font-size:18px">○</span>') + '</td><td><div style="font-weight:600">' + p.id + '. ' + p.title + '</div><div style="font-size:12px;color:var(--text2)">时间: ' + p.timeLimit + 'ms / 内存: ' + p.memoryLimit + 'MB</div></td><td><span class="difficulty diff-' + p.difficulty + '">' + p.difficulty + '</span></td><td><div style="font-weight:600">' + rate + '%</div><div style="font-size:11px;color:var(--text2)">' + acSubs.length + '/' + subs.length + '</div></td><td>' + p.tags.map(t=>'<span class="tag">' + t + '</span>').join('') + '</td></tr>';
+  },
+
+  problemFilterDiff: '全部',
+  setProblemFilter(value) {
+    this.problemFilterDiff = value;
+    document.querySelectorAll('.filter-chip[data-diff]').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.diff === value);
+    });
+    this.filterProblems();
+  },
+  filterProblems() {
+    const search = (document.getElementById('problem-search') && document.getElementById('problem-search').value) || '';
+    const problems = DB.getProblems().filter(p => {
+      const matchSearch = p.title.includes(search) || p.tags.some(t => t.includes(search));
+      const matchDiff = UI.problemFilterDiff === '全部' || String(p.difficulty) === UI.problemFilterDiff;
+      return matchSearch && matchDiff;
+    });
+    const tbody = document.querySelector('#problems-table tbody');
+    if (tbody) tbody.innerHTML = problems.map(p => UI.renderProblemRow(p)).join('');
+  },
+
+  renderProblemDetail() {
+    const p = DB.getProblem(App.currentProblemId);
+    if (!p) return '<div class="page-title">题目不存在</div>';
+    return `
+      <div class="page-header">
+        <div class="page-title">${p.id}. ${p.title} <span class="difficulty diff-${p.difficulty}">${p.difficulty}</span></div>
+        <div class="page-actions"><button class="btn btn-secondary btn-sm" onclick="App.navigate('problems')">← 返回题库</button></div>
+      </div>
+      <div class="problem-layout">
+        <div class="problem-panel markdown-body">
+          <h2>📋 题目描述</h2>
+          ${Markdown.parse(p.description)}
+          <h2>📥 输入格式</h2>
+          <p>${Markdown.parse(p.inputFormat)}</p>
+          <h2>📤 输出格式</h2>
+          <p>${Markdown.parse(p.outputFormat)}</p>
+          <h2>🧪 样例</h2>
+          ${p.samples.map((s, i) => {
+            return '<div style="margin-bottom:16px"><div class="sample-label">输入 #' + (i+1) + '</div><div class="sample-box">' + s.input.replace(/\n/g, '<br>') + '</div><div class="sample-label">输出 #' + (i+1) + '</div><div class="sample-box">' + s.output.replace(/\n/g, '<br>') + '</div></div>';
+          }).join('')}
+          <div style="margin-top:16px"><span style="color:var(--text2);font-size:13px">标签:</span> ${p.tags.map(t=>'<span class="tag tag-info">' + t + '</span>').join('')}</div>
+        </div>
+        <div class="problem-panel">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+            <div style="font-weight:600">💻 代码编辑器</div>
+            <select id="lang-select" style="padding:6px 12px;border-radius:6px;border:1px solid var(--border);background:rgba(0,0,0,.2);color:var(--text)">
+              <option value="cpp">C++ (GCC 11)</option>
+              <option value="c">C (GCC 11)</option>
+            </select>
+          </div>
+          <textarea class="code-editor" id="submit-code" placeholder="// 在这里粘贴你的 C++ 代码\n#include <iostream>\nusing namespace std;\nint main(){\n    // 你的代码\n    return 0;\n}"></textarea>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-top:12px">
+            <div style="font-size:12px;color:var(--text2)">时间限制: ${p.timeLimit}ms | 内存限制: ${p.memoryLimit}MB</div>
+            <button class="btn btn-success" onclick="App.submitCode()">🚀 提交评测</button>
+          </div>
+          <div id="judge-result" style="margin-top:16px"></div>
+        </div>
+      </div>`;
+  },
+
+  renderSubmissions() {
+    const user = Auth.currentUser;
+    const subs = DB.getSubmissions(user.id);
+    return `
+      <div class="page-header"><div class="page-title">📝 提交记录</div></div>
+      <div class="card" style="padding:0;overflow:hidden">
+        <table class="data-table">
+          <thead><tr><th>题目</th><th>状态</th><th>耗时</th><th>内存</th><th>语言</th><th>提交时间</th><th>操作</th></tr></thead>
+          <tbody>
+            ${subs.map(s => {
+              const p = DB.getProblem(s.problemId);
+              return '<tr><td>' + (p ? p.title : '未知') + '</td><td class="status-' + s.status.toLowerCase() + '">' + s.status + '</td><td>' + s.time + 'ms</td><td>' + s.memory + 'MB</td><td>' + s.language + '</td><td>' + new Date(s.submitTime).toLocaleString() + '</td><td><button class="btn btn-secondary btn-sm" onclick="App.viewSubmission(' + s.id + ')">查看</button></td></tr>';
+            }).join('') || '<tr><td colspan="7" style="text-align:center;color:var(--text2);padding:40px">暂无提交记录</td></tr>'}
+          </tbody>
+        </table>
+      </div>`;
+  },
+
+  renderAcCodes() {
+    const user = Auth.currentUser;
+    const subs = DB.getSubmissions(user.id).filter(s => s.status === 'AC');
+    return `
+      <div class="page-header">
+        <div class="page-title">🏆 AC 代码库</div>
+        <div class="page-actions"><input type="text" class="search-box" id="ac-search" placeholder="搜索题目..." style="margin:0" oninput="UI.filterAcCodes()"></div>
+      </div>
+      <div class="filter-bar">
+        <span style="color:var(--text2);font-size:13px">难度:</span>
+        ${['全部','1','2','3','4','5','6','7','8','9','10'].map(d => {
+          return '<button class="filter-chip" data-acdiff="' + d + '" onclick="UI.setAcFilter(&#39;' + d + '&#39;)">' + (d === '全部' ? d : 'Lv.' + d) + '</button>';
+        }).join('')}
+      </div>
+      <div id="ac-codes-list">${this.renderAcCodeList(subs)}</div>`;
+  },
+
+  renderAcCodeList(subs) {
+    return subs.map(s => {
+      const p = DB.getProblem(s.problemId);
+      if (!p) return '';
+      return '<div class="card ac-effect-' + p.difficulty + '" style="cursor:pointer" onclick="App.viewAcCode(' + s.id + ')"><div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-weight:600;font-size:16px">' + p.title + '</div><div style="font-size:12px;color:var(--text2);margin-top:4px"><span class="difficulty diff-' + p.difficulty + '">' + p.difficulty + '</span><span style="margin-left:8px">' + s.time + 'ms / ' + s.memory + 'MB</span><span style="margin-left:8px">' + new Date(s.submitTime).toLocaleDateString() + '</span></div></div><div style="font-size:32px">' + UI.getAcEffectEmoji(p.difficulty) + '</div></div><div style="margin-top:12px;padding:12px;background:rgba(0,0,0,.2);border-radius:8px;font-family:Consolas;font-size:12px;overflow:hidden;white-space:pre;text-overflow:ellipsis;max-height:80px;color:var(--text2)">' + s.code.substring(0, 200).replace(/</g, '&lt;').replace(/>/g, '&gt;') + '...</div></div>';
+    }).join('') || '<div class="card" style="text-align:center;padding:60px;color:var(--text2)"><div style="font-size:48px;margin-bottom:12px">🏆</div><div>还没有 AC 记录，快去刷题吧！</div></div>';
+  },
+
+  getAcEffectEmoji(d) {
+    const map = {1:'🌱',2:'🥉',3:'🥈',4:'🥇',5:'💎',6:'🔮',7:'🔥',8:'⚡',9:'🌟',10:'🌈'};
+    return map[d] || '✅';
+  },
+
+  acFilterDiff: '全部',
+  setAcFilter(value) {
+    this.acFilterDiff = value;
+    document.querySelectorAll('.filter-chip[data-acdiff]').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.acdiff === value);
+    });
+    this.filterAcCodes();
+  },
+  filterAcCodes() {
+    const search = (document.getElementById('ac-search') && document.getElementById('ac-search').value) || '';
+    const user = Auth.currentUser;
+    let subs = DB.getSubmissions(user.id).filter(s => s.status === 'AC');
+    subs = subs.filter(s => {
+      const p = DB.getProblem(s.problemId);
+      if (!p) return false;
+      return p.title.includes(search) && (UI.acFilterDiff === '全部' || String(p.difficulty) === UI.acFilterDiff);
+    });
+    const container = document.getElementById('ac-codes-list');
+    if (container) container.innerHTML = UI.renderAcCodeList(subs);
+  },
+
+  renderNotes() {
+    const user = Auth.currentUser;
+    const notes = DB.getNotes(user.id);
+    return `
+      <div class="page-header">
+        <div class="page-title">📝 我的笔记</div>
+        <div class="page-actions">
+          <input type="text" class="search-box" id="note-search" placeholder="搜索笔记..." style="margin:0" oninput="UI.filterNotes()">
+          <button class="btn btn-primary" onclick="App.navigate('note-editor')">+ 新建笔记</button>
+        </div>
+      </div>
+      <div id="notes-list">
+        ${notes.slice().reverse().map(n => {
+          return '<div class="card" style="cursor:pointer;border-left:3px solid var(--accent)" onclick="App.openNote(' + n.id + ')"><div style="font-weight:600;font-size:16px">' + n.title + '</div><div style="font-size:12px;color:var(--text2);margin-top:6px">' + n.createdAt + ' · ' + n.tags.map(t=>'<span class="tag tag-info">' + t + '</span>').join('') + '</div><div style="margin-top:10px;font-size:13px;color:var(--text2);overflow:hidden;white-space:nowrap;text-overflow:ellipsis">' + UI.stripMarkdown(n.content).substring(0, 100) + '...</div></div>';
+        }).join('') || '<div class="card" style="text-align:center;padding:60px;color:var(--text2)"><div style="font-size:48px;margin-bottom:12px">📝</div><div>暂无笔记，点击右上角新建</div></div>'}
+      </div>`;
+  },
+
+  stripMarkdown(text) {
+    return text.replace(/[#*`]/g, '').replace(/\n/g, ' ');
+  },
+
+  filterNotes() {
+    const search = (document.getElementById('note-search') && document.getElementById('note-search').value) || '';
+    const user = Auth.currentUser;
+    const notes = DB.getNotes(user.id).filter(n => {
+      return n.title.includes(search) || n.content.includes(search) || n.tags.some(t => t.includes(search));
+    });
+    const container = document.getElementById('notes-list');
+    if (container) {
+      container.innerHTML = notes.slice().reverse().map(n => {
+        return '<div class="card" style="cursor:pointer;border-left:3px solid var(--accent)" onclick="App.openNote(' + n.id + ')"><div style="font-weight:600;font-size:16px">' + n.title + '</div><div style="font-size:12px;color:var(--text2);margin-top:6px">' + n.createdAt + ' · ' + n.tags.map(t=>'<span class="tag tag-info">' + t + '</span>').join('') + '</div><div style="margin-top:10px;font-size:13px;color:var(--text2);overflow:hidden;white-space:nowrap;text-overflow:ellipsis">' + UI.stripMarkdown(n.content).substring(0, 100) + '...</div></div>';
+      }).join('') || '<div class="card" style="text-align:center;padding:40px;color:var(--text2)">没有找到匹配的笔记</div>';
+    }
+  },
+
+  renderNoteEditor() {
+    const note = App.editingNoteId ? DB.getNotes(Auth.currentUser.id).find(n => n.id === App.editingNoteId) : null;
+    return `
+      <div class="page-header">
+        <div class="page-title">${note ? '✏️ 编辑笔记' : '📝 新建笔记'}</div>
+        <div class="page-actions">
+          <button class="btn btn-secondary" onclick="App.navigate('notes')">取消</button>
+          <button class="btn btn-primary" onclick="App.saveNote()">💾 保存</button>
+        </div>
+      </div>
+      <div style="margin-bottom:16px">
+        <input type="text" class="form-control2" id="note-title" placeholder="笔记标题" value="${note ? note.title : ''}" style="margin-bottom:12px">
+        <input type="text" class="form-control2" id="note-tags" placeholder="标签（空格分隔）" value="${note ? note.tags.join(' ') : ''}">
+      </div>
+      <div class="editor-split">
+        <div class="editor-pane">
+          <div style="font-size:12px;color:var(--text2);margin-bottom:8px;font-weight:600">✏️ Markdown 编辑</div>
+          <textarea class="editor-textarea" id="note-content" placeholder="支持 Markdown 语法...\n# 标题\n**粗体**\n\`代码\`\n\`\`\`cpp\n代码块\n\`\`\`\n- 列表项">${note ? note.content : ''}</textarea>
+        </div>
+        <div class="preview-pane markdown-body" id="note-preview">
+          <div style="font-size:12px;color:var(--text2);margin-bottom:8px;font-weight:600">👁️ 实时预览</div>
+          <div id="preview-content">${Markdown.parse(note ? note.content : '')}</div>
+        </div>
+      </div>`;
+  },
+
+  renderFiles() {
+    const files = DB.getFiles();
+    return `
+      <div class="page-header"><div class="page-title">📁 学习资料库</div></div>
+      <div class="upload-area" onclick="document.getElementById('file-upload').click()">
+        <div style="font-size:40px;margin-bottom:8px">📤</div>
+        <div style="font-weight:600">点击或拖拽上传文件</div>
+        <div style="font-size:12px;color:var(--text2);margin-top:4px">PDF / EPUB / CPP / C / H / 代码 / 图片等</div>
+        <input type="file" id="file-upload" style="display:none" multiple onchange="App.handleFileUpload(this)" accept=".pdf,.epub,.zip,.cpp,.c,.h,.hpp,image/*">
+      </div>
+      <div class="file-grid" id="files-grid">
+        ${files.map(f => {
+          const isCode = f.type === 'cpp';
+          return '<div class="file-card">' +
+            '<div class="file-icon-large">' + UI.getFileIcon(f.type) + '</div>' +
+            '<div class="file-name">' + f.name + '</div>' +
+            '<div class="file-meta">' + f.size + ' · ' + f.date + (f.lines ? ' · ' + f.lines + '行' : '') + '</div>' +
+            '<div style="margin-top:10px;display:flex;gap:6px;justify-content:center">' +
+            (isCode ? '<button class="btn btn-primary btn-sm" onclick="App.previewFile(' + f.id + ')">👁️ 预览</button>' : '') +
+            '<button class="btn btn-secondary btn-sm" onclick="App.downloadFile(' + f.id + ')">⬇️ 下载</button>' +
+            '</div></div>';
+        }).join('') || '<div style="grid-column:1/-1;text-align:center;color:var(--text2);padding:40px">暂无文件</div>'}
+      </div>`;
+  },
+  getFileIcon(type) {
+    const icons = { pdf: '📕', epub: '📗', zip: '📦', image: '🖼️', cpp: '⚙️', default: '📄' };
+    return icons[type] || icons.default;
+  },
+
+  renderAdminUsers() {
+    const users = DB.get().users || [];
+    return `
+      <div class="page-header">
+        <div class="page-title">👥 用户管理</div>
+        <button class="btn btn-primary" onclick="App.showCreateUser()">+ 创建账号</button>
+      </div>
+      <div class="card" style="padding:0;overflow:hidden">
+        <table class="data-table">
+          <thead><tr><th>ID</th><th>用户名</th><th>昵称</th><th>角色</th><th>创建时间</th></tr></thead>
+          <tbody>
+            ${users.map(u => {
+              return '<tr><td>' + u.id + '</td><td style="font-weight:500">' + u.username + '</td><td>' + u.nickname + '</td><td><span class="tag ' + (u.role === 'admin' ? 'tag-primary' : 'tag-success') + '">' + u.role.toUpperCase() + '</span></td><td>' + u.createdAt + '</td></tr>';
+            }).join('')}
+          </tbody>
+        </table>
+      </div>`;
+  },
+
+  renderAdminProblems() {
+    const problems = DB.getProblems();
+    return `
+      <div class="page-header">
+        <div class="page-title">⚙️ 题目管理</div>
+        <button class="btn btn-primary" onclick="App.navigate('admin-problem-edit')">+ 新建题目</button>
+      </div>
+      <div class="card" style="padding:0;overflow:hidden">
+        <table class="data-table">
+          <thead><tr><th>ID</th><th>题目</th><th>难度</th><th>时限</th><th>空限</th><th>标签</th><th>操作</th></tr></thead>
+          <tbody>
+            ${problems.map(p => {
+              return '<tr><td>' + p.id + '</td><td style="font-weight:500">' + p.title + '</td><td><span class="difficulty diff-' + p.difficulty + '">' + p.difficulty + '</span></td><td>' + p.timeLimit + 'ms</td><td>' + p.memoryLimit + 'MB</td><td>' + p.tags.map(t=>'<span class="tag">' + t + '</span>').join('') + '</td><td><button class="btn btn-secondary btn-sm" onclick="App.editProblem(' + p.id + ')">编辑</button><button class="btn btn-primary btn-sm" style="background:var(--accent);margin-left:6px" onclick="App.deleteProblem(' + p.id + ')">删除</button></td></tr>';
+            }).join('')}
+          </tbody>
+        </table>
+      </div>`;
+  },
+
+  renderAdminProblemEdit() {
+    const p = App.editingProblemId ? DB.getProblem(App.editingProblemId) : null;
+    return `
+      <div class="page-header">
+        <div class="page-title">${p ? '✏️ 编辑题目' : '➕ 新建题目'}</div>
+        <div class="page-actions">
+          <button class="btn btn-secondary" onclick="App.navigate('admin-problems')">返回</button>
+          <button class="btn btn-primary" onclick="App.saveProblem()">💾 保存题目</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="form-row">
+          <div class="form-group2"><label>题目名称</label><input type="text" class="form-control2" id="prob-title" value="${p ? p.title : ''}" placeholder="如：A + B Problem"></div>
+          <div class="form-group2"><label>难度 (1-10)</label><input type="range" class="form-control2" id="prob-difficulty" min="1" max="10" value="${p ? p.difficulty : 1}" oninput="document.getElementById('diff-display').textContent=this.value"><div style="text-align:center;font-weight:700;color:var(--accent)" id="diff-display">${p ? p.difficulty : 1}</div></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group2"><label>时间限制 (ms)</label><input type="number" class="form-control2" id="prob-tl" value="${p ? p.timeLimit : 1000}"></div>
+          <div class="form-group2"><label>内存限制 (MB)</label><input type="number" class="form-control2" id="prob-ml" value="${p ? p.memoryLimit : 128}"></div>
+        </div>
+        <div class="form-group2"><label>标签（空格分隔）</label><input type="text" class="form-control2" id="prob-tags" value="${p ? p.tags.join(' ') : ''}" placeholder="如：入门 模拟 数学"></div>
+        <div class="form-group2"><label>题面描述 (支持 Markdown)</label><textarea class="form-textarea" id="prob-desc" placeholder="输入题目描述">${p ? p.description : ''}</textarea></div>
+        <div class="form-row">
+          <div class="form-group2"><label>输入格式</label><input type="text" class="form-control2" id="prob-input" value="${p ? p.inputFormat : ''}"></div>
+          <div class="form-group2"><label>输出格式</label><input type="text" class="form-control2" id="prob-output" value="${p ? p.outputFormat : ''}"></div>
+        </div>
+        <div class="form-group2"><label>样例（JSON格式）</label><textarea class="form-textarea" id="prob-samples" placeholder='[{"input":"1 2","output":"3"}]'>${p ? JSON.stringify(p.samples) : '[\n  {"input":"","output":""}\n]'}</textarea></div>
+        <div class="form-group2"><label>测试点（JSON格式，用于评测）</label><textarea class="form-textarea" id="prob-tests" placeholder='[{"input":"1 2","output":"3"}]'>${p ? JSON.stringify(p.testCases) : '[\n  {"input":"","output":""}\n]'}</textarea></div>
+        <div class="form-group2"><label>标准答案代码（用于前端简单比对）</label><textarea class="form-textarea" id="prob-std" style="min-height:200px" placeholder="粘贴标准答案代码">${p ? (p.standardCode || '') : ''}</textarea></div>
+      </div>`;
+  },
+
+  renderProfile() {
+    const user = Auth.currentUser;
+    const subs = DB.getSubmissions(user.id);
+    const acCount = subs.filter(s => s.status === 'AC').length;
+    return `
+      <div class="page-header"><div class="page-title">👤 个人中心</div></div>
+      <div class="card" style="max-width:500px">
+        <div style="text-align:center;margin-bottom:24px">
+          <div style="width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,var(--accent),#a855f7);display:flex;align-items:center;justify-content:center;font-size:36px;margin:0 auto 12px">👤</div>
+          <div style="font-size:20px;font-weight:700">${user.nickname || user.username}</div>
+          <div style="margin-top:4px"><span class="tag ${user.role === 'admin' ? 'tag-primary' : 'tag-info'}">${user.role.toUpperCase()}</span></div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px">
+          <div class="stat-card" style="padding:16px"><div class="stat-value" style="font-size:24px">${subs.length}</div><div class="stat-label">总提交</div></div>
+          <div class="stat-card" style="padding:16px"><div class="stat-value" style="font-size:24px;color:var(--ok)">${acCount}</div><div class="stat-label">AC 数</div></div>
+        </div>
+        <div class="form-group2"><label>昵称</label><input type="text" class="form-control2" id="profile-nickname" value="${user.nickname || ''}" placeholder="设置昵称"></div>
+        <div class="form-group2"><label>修改密码</label><input type="password" class="form-control2" id="profile-new-pwd" placeholder="留空则不修改"></div>
+        <button class="btn btn-primary" onclick="App.updateProfile()">💾 保存修改</button>
+      </div>`;
+  },
+
+  renderLeagueDetail() {
+    const league = DB.getLeagueById(App.currentLeagueId);
+    if (!league) return '<div class="page-title">联赛不存在</div>';
+    const user = Auth.currentUser;
+    const userTeam = DB.getTeamByUserId(user.id);
+    const isRegistered = league.registrations && league.registrations.some(r => r.userId === user.id);
+    const problems = (league.problemIds || []).map(pid => DB.getProblem(pid)).filter(p => p);
+    const now = new Date();
+    const isOngoing = league.status === 'ongoing';
+    const isEnded = league.status === 'ended';
+
+    // 计算实时榜
+    const leaderboard = DB.getLeagueLeaderboard(league.id);
+
+    return `
+      <div class="page-header">
+        <div class="page-title">🏆 ${league.name}</div>
+        <div class="page-actions">
+          <button class="btn btn-secondary btn-sm" onclick="App.navigate('league')">← 返回</button>
+          ${isOngoing ? '<span class="tag tag-success">● 进行中</span>' : isEnded ? '<span class="tag">已结束</span>' : '<span class="tag tag-info">未开始</span>'}
+        </div>
+      </div>
+
+      ${league.announcements && league.announcements.length > 0 ? `
+      <div class="card" style="background:rgba(59,130,246,.05);border-color:rgba(59,130,246,.2);margin-bottom:20px">
+        <div style="font-size:14px;font-weight:600;color:var(--info);margin-bottom:8px">📢 公告</div>
+        ${league.announcements.map(a => `
+          <div style="padding:8px 0;border-bottom:1px solid rgba(59,130,246,.1)">
+            <div style="font-size:13px">${a.content}</div>
+            <div style="font-size:11px;color:var(--text2);margin-top:4px">${new Date(a.time).toLocaleString()}</div>
+          </div>
+        `).join('')}
+      </div>` : ''}
+
+      <div style="display:grid;grid-template-columns:2fr 1fr;gap:20px">
+        <div>
+          <div class="card" style="margin-bottom:20px">
+            <div class="card-header"><div class="card-title">📋 比赛信息</div></div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;font-size:13px">
+              <div><span style="color:var(--text2)">开始时间:</span> <span style="font-weight:500">${new Date(league.startTime).toLocaleString()}</span></div>
+              <div><span style="color:var(--text2)">结束时间:</span> <span style="font-weight:500">${new Date(league.endTime).toLocaleString()}</span></div>
+              <div><span style="color:var(--text2)">题目数量:</span> <span style="font-weight:500">${problems.length} 题</span></div>
+              <div><span style="color:var(--text2)">报名人数:</span> <span style="font-weight:500">${league.registrations ? league.registrations.length : 0} 人</span></div>
+            </div>
+          </div>
+
+          ${isOngoing || isEnded ? `
+          <div class="card">
+            <div class="card-header"><div class="card-title">📚 比赛题目</div></div>
+            ${problems.length === 0 ? '<div style="color:var(--text2);padding:20px;text-align:center">暂无题目</div>' : ''}
+            <table class="data-table">
+              <thead><tr><th>题目</th><th>难度</th><th>状态</th><th>操作</th></tr></thead>
+              <tbody>
+                ${problems.map((p, idx) => {
+                  const sub = isOngoing ? (league.submissions || []).find(s => s.userId === user.id && s.problemId === p.id) : null;
+                  const ac = sub && sub.status === 'AC';
+                  return `<tr>
+                    <td><div style="font-weight:600">${idx + 1}. ${p.title}</div></td>
+                    <td><span class="difficulty diff-${p.difficulty}">${p.difficulty}</span></td>
+                    <td>${ac ? '<span class="status-ac">AC ✓</span>' : sub ? '<span class="status-wa">尝试中</span>' : '<span style="color:var(--text2)">-</span>'}</td>
+                    <td>${isOngoing && isRegistered ? `<button class="btn btn-primary btn-sm" onclick="App.solveLeagueProblem(${league.id}, ${p.id})">🚀 做题</button>` : (isEnded ? '<span style="font-size:12px;color:var(--text2)">已结束</span>' : '<span style="font-size:12px;color:var(--text2)">未报名</span>')}</td>
+                  </tr>`;
+                }).join('')}
+              </tbody>
+            </table>
+          </div>` : `
+          <div class="card" style="text-align:center;padding:40px;color:var(--text2)">
+            <div style="font-size:36px;margin-bottom:12px">⏳</div>
+            <div>比赛尚未开始</div>
+            <div style="font-size:13px;margin-top:8px">比赛开始后即可查看题目</div>
+          </div>`}
+        </div>
+
+        <div>
+          <div class="card" style="margin-bottom:20px">
+            <div class="card-header"><div class="card-title">🏅 实时得分榜</div></div>
+            ${leaderboard.length === 0 ? '<div style="color:var(--text2);padding:20px;text-align:center">暂无得分</div>' : ''}
+            ${leaderboard.map((s, idx) => {
+              const team = DB.getTeamById(s.teamId);
+              const emoji = idx === 0 ? '🥇' : idx === 1 ? '🥈' : idx === 2 ? '🥉' : (idx + 1);
+              return `<div style="padding:10px 0;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center">
+                <div style="display:flex;align-items:center;gap:10px">
+                  <span style="font-size:18px;width:28px;text-align:center">${emoji}</span>
+                  <div>
+                    <div style="font-weight:600;font-size:14px">${team ? team.name : '未知'}</div>
+                    <div style="font-size:11px;color:var(--text2)">${s.solvedCount} 题 AC</div>
+                  </div>
+                </div>
+                <div style="font-size:18px;font-weight:700;color:var(--accent)">${s.totalScore}</div>
+              </div>`;
+            }).join('')}
+          </div>
+
+          ${isOngoing ? `
+          <div class="card">
+            <div class="card-header"><div class="card-title">⏱️ 剩余时间</div></div>
+            <div style="text-align:center;padding:20px">
+              <div id="league-countdown" style="font-size:28px;font-weight:700;font-family:monospace;color:var(--accent)" data-end="${league.endTime}">计算中...</div>
+            </div>
+          </div>` : ''}
+        </div>
+      </div>
+    `;
+  },
+
+  renderAdminLeague() {
+    const leagues = DB.getLeagues();
+    const problems = DB.getProblems();
+    return `
+      <div class="page-header">
+        <div class="page-title">🏅 联赛管理</div>
+        <div class="page-actions"><button class="btn btn-primary" onclick="App.showCreateLeague()">+ 创建联赛</button></div>
+      </div>
+
+      <div class="card" style="margin-bottom:20px">
+        <div class="card-header"><div class="card-title">📅 联赛列表</div></div>
+        ${leagues.length === 0 ? '<div style="color:var(--text2);padding:20px;text-align:center">暂无联赛，点击右上角创建</div>' : ''}
+        ${leagues.map(l => {
+          const statusMap = { upcoming: '未开始', registration: '报名中', ongoing: '进行中', ended: '已结束' };
+          const statusColor = { upcoming: 'tag-info', registration: 'tag-success', ongoing: 'tag-primary', ended: '' };
+          return `<div style="padding:14px 0;border-bottom:1px solid var(--border)">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+              <div style="font-weight:600;font-size:16px">${l.name}</div>
+              <span class="tag ${statusColor[l.status] || ''}">${statusMap[l.status] || l.status}</span>
+            </div>
+            <div style="font-size:12px;color:var(--text2);margin-bottom:8px">
+              ${new Date(l.startTime).toLocaleString()} ~ ${new Date(l.endTime).toLocaleString()} · ${l.problemIds ? l.problemIds.length : 0}题 · ${l.registrations ? l.registrations.length : 0}人报名
+            </div>
+            <div style="display:flex;gap:8px">
+              <button class="btn btn-secondary btn-sm" onclick="App.editLeague(${l.id})">编辑</button>
+              <button class="btn btn-info btn-sm" onclick="App.manageLeagueAnnouncements(${l.id})">公告</button>
+              <button class="btn btn-sm" style="background:var(--accent);color:white" onclick="App.deleteLeague(${l.id})">删除</button>
+            </div>
+          </div>`;
+        }).join('')}
+      </div>
+
+      <div class="card">
+        <div class="card-header"><div class="card-title">📖 使用说明</div></div>
+        <div style="font-size:13px;color:var(--text2);line-height:1.8">
+          <p><strong>创建联赛:</strong> 设置比赛名称、时间、选择最多7道题目。比赛开始前7天可设置。</p>
+          <p><strong>报名阶段:</strong> 赛前3天自动开启报名，赛前12小时截止。战队成员可报名。</p>
+          <p><strong>比赛阶段:</strong> 比赛当天 00:00:01 自动开始，23:59:59 自动结束。</p>
+          <p><strong>积分结算:</strong> 比赛结束后自动按排名结算：第1名30分、第2名20分、第3名10分、其余5分。</p>
+          <p><strong>公告:</strong> 可在联赛详情页发布公告，所有参赛者可看到。</p>
+        </div>
+      </div>
+    `;
+  },
+
+  bindPageEvents(page) {
+    if (page === 'note-editor' || page === 'admin-problem-edit') {
+      const textarea = document.getElementById('note-content');
+      if (textarea) {
+        textarea.addEventListener('input', () => {
+          const preview = document.getElementById('preview-content');
+          if (preview) preview.innerHTML = Markdown.parse(textarea.value);
+        });
+      }
+    }
+    if (page === 'problems') {
+      const firstChip = document.querySelector('.filter-chip[data-diff]');
+      if (firstChip) firstChip.classList.add('active');
+    }
+    if (page === 'ac-codes') {
+      const firstChip = document.querySelector('.filter-chip[data-acdiff]');
+      if (firstChip) firstChip.classList.add('active');
+    }
+    if (page === 'league-detail') {
+      // 启动联赛倒计时
+      const el = document.getElementById('league-countdown');
+      if (el) {
+        const update = () => {
+          const end = new Date(el.dataset.end);
+          const now = new Date();
+          const diff = end - now;
+          if (diff <= 0) { el.textContent = '已结束'; el.style.color = 'var(--text2)'; }
+          else {
+            const h = Math.floor(diff / 3600000);
+            const m = Math.floor((diff % 3600000) / 60000);
+            const s = Math.floor((diff % 60000) / 1000);
+            el.textContent = (h < 10 ? '0' : '') + h + ':' + (m < 10 ? '0' : '') + m + ':' + (s < 10 ? '0' : '') + s;
+          }
+        };
+        update();
+        App._leagueTimer = setInterval(update, 1000);
+      }
+    }
+    if (page !== 'league-detail' && App._leagueTimer) {
+      clearInterval(App._leagueTimer);
+      App._leagueTimer = null;
+    }
+  }
+};
+
+// ==================== 应用主控制器 ====================
+const App = {
+  currentPage: 'dashboard',
+  currentProblemId: null,
+  editingNoteId: null,
+  editingProblemId: null,
+  currentTeamId: null,
+  judging: false,
+
+  async init() {
+    console.log('[App] ====== 系统初始化 ======');
+    try {
+      await DB.init();
+      console.log('[App] 显示登录页');
+      // 清除旧会话，确保每次打开都停留在登录界面
+      localStorage.removeItem(Auth.SESSION_KEY);
+      // 隐藏加载画面
+      setTimeout(() => {
+        const loading = document.getElementById('loading-screen');
+        if (loading) loading.classList.add('fade-out');
+        setTimeout(() => { if (loading) loading.remove(); }, 500);
+      }, 800);
+    } catch(e) {
+      console.error('[App] 初始化失败:', e);
+    }
+  },
+
+  start() {
+    try {
+      if (!Auth.currentUser) {
+        console.error('[App] 启动失败：无当前用户');
+        return;
+      }
+      console.log('[App] 启动主界面，用户:', Auth.currentUser.username, '角色:', Auth.currentUser.role);
+
+      document.getElementById('login-page').style.display = 'none';
+      document.getElementById('main-app').style.display = 'block';
+
+      const nicknameEl = document.getElementById('user-nickname');
+      const roleEl = document.getElementById('user-role');
+
+      if (nicknameEl) nicknameEl.textContent = Auth.currentUser.nickname || Auth.currentUser.username;
+      if (roleEl) roleEl.textContent = (Auth.currentUser.role || 'user').toUpperCase();
+
+      if (Auth.isAdmin()) {
+        const adminSection = document.getElementById('admin-nav-section');
+        const adminUsers = document.getElementById('nav-admin-users');
+        const adminProblems = document.getElementById('nav-admin-problems');
+        const adminLeague = document.getElementById('nav-admin-league');
+        if (adminSection) adminSection.style.display = 'block';
+        if (adminUsers) adminUsers.style.display = 'flex';
+        if (adminProblems) adminProblems.style.display = 'flex';
+        if (adminLeague) adminLeague.style.display = 'flex';
+      }
+
+      this.navigate('dashboard');
+      console.log('[App] 启动完成');
+    } catch(e) {
+      console.error('[App] 启动异常:', e);
+    }
+  },
+
+  async forceReset() {
+    if (confirm('确定要重置所有数据吗？\n这将清除所有用户、题目、笔记和提交记录，并重新初始化预置账号。\n\n预置账号：wanglize / wanglize20140325')) {
+      try {
+        localStorage.removeItem(DB.KEY);
+        localStorage.removeItem(Auth.SESSION_KEY);
+        localStorage.removeItem('cpp_oj_db');
+        localStorage.removeItem('cpp_oj_session');
+        if (window.indexedDB) {
+          try {
+            const req = indexedDB.deleteDatabase(DB.DB_NAME);
+            await new Promise((resolve) => { req.onsuccess = () => resolve(); req.onerror = () => resolve(); });
+            console.log('[App] IndexedDB 数据库已删除');
+          } catch(e) { console.warn('[App] 删除 IndexedDB 失败:', e); }
+        }
+        await DB.reset();
+        alert('数据已彻底重置！\n预置账号：wanglize / wanglize20140325\n页面即将刷新...');
+        location.reload();
+      } catch(e) {
+        console.error('[App] 重置失败:', e);
+        alert('重置失败: ' + (e.message || '未知错误') + '\n请尝试手动清除浏览器缓存后刷新页面。');
+      }
+    }
+  },
+
+  navigate(page, data) {
+    this.currentPage = page;
+    document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+    const activeNav = document.querySelector('.nav-item[data-page="' + page + '"]');
+    if (activeNav) activeNav.classList.add('active');
+
+    if (page === 'problem-detail' && data) {
+      this.currentProblemId = data;
+      document.getElementById('main-content').innerHTML = UI.renderProblemDetail();
+    } else if (page === 'note-editor' && data) {
+      this.editingNoteId = data;
+      document.getElementById('main-content').innerHTML = UI.renderNoteEditor();
+    } else if (page === 'admin-problem-edit' && data) {
+      this.editingProblemId = data;
+      document.getElementById('main-content').innerHTML = UI.renderAdminProblemEdit();
+    } else if (page === 'league-detail' && data) {
+      this.currentLeagueId = data;
+      document.getElementById('main-content').innerHTML = UI.renderLeagueDetail();
+    } else {
+      if (page === 'problem-detail') this.currentProblemId = null;
+      if (page === 'note-editor') this.editingNoteId = null;
+      if (page === 'admin-problem-edit') this.editingProblemId = null;
+      if (page === 'league-detail') this.currentLeagueId = null;
+      UI.renderPage(page);
+    }
+  },
+
+  viewProblem(id) {
+    this.navigate('problem-detail', id);
+  },
+
+  async submitCode() {
+    if (this.judging) return;
+    const code = document.getElementById('submit-code').value.trim();
+    const lang = document.getElementById('lang-select').value;
+    if (!code) { UI.toast('请输入代码', 'error'); return; }
+    if (!this.currentProblemId) return;
+    const problem = DB.getProblem(this.currentProblemId);
+    if (!problem) return;
+
+    this.judging = true;
+    const resultDiv = document.getElementById('judge-result');
+    resultDiv.innerHTML = '<div style="text-align:center;padding:20px"><div style="font-size:24px;margin-bottom:8px">⚙️</div><div>正在编译...</div></div>';
+
+    const result = await Judge.judge(problem, code, lang);
+
+    // 普通提交记录
+    DB.createSubmission({
+      userId: Auth.currentUser.id,
+      problemId: problem.id,
+      code: code,
+      language: lang,
+      status: result.status,
+      time: result.time,
+      memory: result.memory,
+      passed: result.passed,
+      total: result.total,
+      details: result.details
+    });
+
+    // 联赛模式提交记录
+    if (this.currentLeagueId) {
+      const league = DB.getLeagueById(this.currentLeagueId);
+      if (league && league.status === 'ongoing') {
+        const userTeam = DB.getTeamByUserId(Auth.currentUser.id);
+        if (userTeam) {
+          const score = result.status === 'AC' ? 100 : 0;
+          DB.submitLeagueCode(this.currentLeagueId, Auth.currentUser.id, userTeam.id, problem.id, result.status, score);
+          if (result.status === 'AC') {
+            UI.toast('🏆 联赛提交成功！+100分', 'success');
+          }
+        }
+      }
+    }
+
+    const statusColors = { AC: 'var(--ok)', WA: 'var(--accent)', TLE: 'var(--warn)', MLE: '#d97706', CE: '#6b7280', RE: '#8b5cf6' };
+    const statusEmoji = { AC: '🎉', WA: '❌', TLE: '⏱️', MLE: '💾', CE: '🔧', RE: '💥' };
+
+    resultDiv.innerHTML = `
+      <div class="card ac-effect-${problem.difficulty}" style="margin-top:16px">
+        <div style="text-align:center;padding:20px">
+          <div style="font-size:48px;margin-bottom:8px">${statusEmoji[result.status] || '❓'}</div>
+          <div style="font-size:28px;font-weight:700;color:${statusColors[result.status] || 'white'}">${result.status}</div>
+          <div style="color:var(--text2);margin-top:8px">${result.message}</div>
+          <div style="display:flex;justify-content:center;gap:24px;margin-top:16px">
+            <div style="text-align:center"><div style="font-size:20px;font-weight:700">${result.time}ms</div><div style="font-size:12px;color:var(--text2)">运行时间</div></div>
+            <div style="text-align:center"><div style="font-size:20px;font-weight:700">${result.memory}MB</div><div style="font-size:12px;color:var(--text2)">内存占用</div></div>
+            <div style="text-align:center"><div style="font-size:20px;font-weight:700">${result.passed}/${result.total}</div><div style="font-size:12px;color:var(--text2)">通过测试点</div></div>
+          </div>
+        </div>
+        <div class="judge-animation" style="padding:0 20px 20px">
+          ${result.details.map(d => {
+            return '<div class="test-case ' + (d.pass ? 'pass' : 'fail') + '"><div style="display:flex;align-items:center;gap:8px;flex:1"><span class="tc-status" style="color:' + (d.pass ? 'var(--ok)' : 'var(--accent)') + '">' + (d.pass ? '✓' : '✗') + ' 测试点 #' + d.id + '</span><span class="tc-info">' + d.time + 'ms / ' + d.memory + 'MB</span></div>' + (!d.pass ? '<div style="font-size:11px;color:var(--accent)">期望: ' + d.expected.substring(0,30) + ' | 输出: ' + d.output.substring(0,30) + '</div>' : '') + '</div>';
+          }).join('')}
+        </div>
+      </div>`;
+
+    this.judging = false;
+    UI.toast(result.status === 'AC' ? '🎉 恭喜 AC！' + UI.getAcEffectEmoji(problem.difficulty) : result.status + ' - 继续加油！', result.status === 'AC' ? 'success' : 'error');
+  },
+
+  viewSubmission(subId) {
+    const sub = DB.getSubmissions().find(s => s.id === subId);
+    if (!sub) return;
+    const p = DB.getProblem(sub.problemId);
+    UI.openModal('<h2 style="margin-bottom:16px">提交详情 #' + sub.id + '</h2><div style="margin-bottom:12px"><strong>题目:</strong> ' + (p ? p.title : '未知') + '</div><div style="margin-bottom:12px"><strong>状态:</strong> <span class="status-' + sub.status.toLowerCase() + '">' + sub.status + '</span></div><div style="margin-bottom:12px"><strong>性能:</strong> ' + sub.time + 'ms / ' + sub.memory + 'MB</div><div style="margin-bottom:12px"><strong>语言:</strong> ' + sub.language + '</div><div style="margin-bottom:12px"><strong>提交时间:</strong> ' + new Date(sub.submitTime).toLocaleString() + '</div><h3 style="margin:16px 0 8px">💻 代码</h3><div class="code-block" style="max-height:400px;overflow:auto">' + sub.code.replace(/</g, '&lt;').replace(/>/g, '&gt;') + '</div>');
+  },
+
+  viewAcCode(subId) {
+    this.viewSubmission(subId);
+  },
+
+  openNote(noteId) {
+    const note = DB.getNotes(Auth.currentUser.id).find(n => n.id === noteId);
+    if (!note) return;
+    UI.openModal(`<h2 style="margin-bottom:12px">${note.title}</h2><div style="margin-bottom:16px">${note.tags.map(t=>`<span class="tag tag-info">${t}</span>`).join('')}</div><div class="markdown-body">${Markdown.parse(note.content)}</div><div style="margin-top:20px;display:flex;gap:10px"><button class="btn btn-secondary" onclick="UI.closeModal()">关闭</button><button class="btn btn-primary" onclick="UI.closeModal();App.navigate(&#39;note-editor&#39;, ${note.id})">编辑</button><button class="btn" style="background:var(--accent);color:white" onclick="if(confirm(&#39;确定删除？&#39;)){DB.deleteNote(${note.id});UI.closeModal();App.navigate(&#39;notes&#39;);}">删除</button></div>`);
+  },
+
+  saveNote() {
+    const title = (document.getElementById('note-title').value || '').trim();
+    const content = (document.getElementById('note-content').value || '').trim();
+    const tagsStr = (document.getElementById('note-tags').value || '').trim();
+    if (!title || !content) { UI.toast('请填写标题和内容', 'error'); return; }
+    const tags = tagsStr ? tagsStr.split(/\s+/).filter(t => t) : [];
+    if (this.editingNoteId) {
+      DB.updateNote(this.editingNoteId, { title, content, tags });
+      UI.toast('笔记更新成功');
+    } else {
+      DB.createNote({ userId: Auth.currentUser.id, title, content, tags });
+      UI.toast('笔记创建成功');
+    }
+    this.navigate('notes');
+  },
+
+  handleFileUpload(input) {
+    const files = Array.from(input.files);
+    let pending = files.length;
+    if (pending === 0) return;
+    files.forEach(file => {
+      const isCpp = file.name.endsWith('.cpp') || file.name.endsWith('.c') || file.name.endsWith('.h') || file.name.endsWith('.hpp');
+      const type = file.name.endsWith('.pdf') ? 'pdf' : file.name.endsWith('.epub') ? 'epub' : file.name.endsWith('.zip') ? 'zip' : file.name.match(/\.(jpg|jpeg|png|gif|webp)$/) ? 'image' : isCpp ? 'cpp' : 'default';
+      const size = file.size > 1024*1024 ? (file.size/(1024*1024)).toFixed(1) + ' MB' : (file.size/1024).toFixed(0) + ' KB';
+      const reader = new FileReader();
+      reader.onload = e => {
+        const fileData = { name: file.name, size, type, date: new Date().toISOString().split('T')[0], data: e.target.result };
+        if (isCpp) {
+          const textReader = new FileReader();
+          textReader.onload = te => {
+            fileData.isText = true;
+            fileData.textContent = te.target.result;
+            fileData.lines = te.target.result.split('\n').length;
+            DB.addFile(fileData);
+            pending--;
+            if (pending === 0) { UI.toast('文件上传成功'); App.navigate('files'); }
+          };
+          textReader.readAsText(file);
+        } else {
+          DB.addFile(fileData);
+          pending--;
+          if (pending === 0) { UI.toast('文件上传成功'); App.navigate('files'); }
+        }
+      };
+      reader.readAsDataURL(file);
+    });
+    input.value = '';
+  },
+
+  downloadFile(fileId) {
+    const file = DB.getFiles().find(f => f.id === fileId);
+    if (!file || !file.data) { UI.toast('文件数据不存在', 'error'); return; }
+    const a = document.createElement('a');
+    a.href = file.data;
+    a.download = file.name;
+    a.click();
+  },
+
+  showCreateUser() {
+    UI.openModal('<h2 style="margin-bottom:20px">➕ 创建新账号</h2><div class="form-group2"><label>用户名</label><input type="text" class="form-control2" id="new-user-name" placeholder="输入用户名"></div><div class="form-group2"><label>密码</label><input type="text" class="form-control2" id="new-user-pwd" placeholder="输入密码"></div><div class="form-group2"><label>角色</label><select class="form-select" id="new-user-role"><option value="user">普通用户</option><option value="admin">管理员</option></select></div><button class="btn btn-primary" onclick="App.createUser()">✨ 创建账号</button>');
+  },
+
+  createUser() {
+    const username = (document.getElementById('new-user-name').value || '').trim();
+    const password = document.getElementById('new-user-pwd').value || '';
+    const role = document.getElementById('new-user-role').value;
+    if (!username || !password) { UI.toast('请填写完整', 'error'); return; }
+    const user = DB.createUser(username, password, role);
+    if (!user) { UI.toast('用户名已存在', 'error'); return; }
+    UI.closeModal();
+    UI.toast('账号创建成功');
+    this.navigate('admin-users');
+  },
+
+  editProblem(id) {
+    this.navigate('admin-problem-edit', id);
+  },
+
+  deleteProblem(id) {
+    if (!confirm('确定删除这道题？所有相关提交也会被清理。')) return;
+    DB.deleteProblem(id);
+    const data = DB.get();
+    data.submissions = (data.submissions || []).filter(s => s.problemId !== id);
+    DB.set(data);
+    UI.toast('题目已删除');
+    this.navigate('admin-problems');
+  },
+
+  saveProblem() {
+    try {
+      const title = (document.getElementById('prob-title').value || '').trim();
+      const difficulty = parseInt(document.getElementById('prob-difficulty').value);
+      const timeLimit = parseInt(document.getElementById('prob-tl').value);
+      const memoryLimit = parseInt(document.getElementById('prob-ml').value);
+      const tags = (document.getElementById('prob-tags').value || '').trim().split(/\s+/).filter(t => t);
+      const description = (document.getElementById('prob-desc').value || '').trim();
+      const inputFormat = (document.getElementById('prob-input').value || '').trim();
+      const outputFormat = (document.getElementById('prob-output').value || '').trim();
+      const samples = JSON.parse(document.getElementById('prob-samples').value);
+      const testCases = JSON.parse(document.getElementById('prob-tests').value);
+      const standardCode = (document.getElementById('prob-std').value || '').trim();
+      if (!title || !description) { UI.toast('请填写必要字段', 'error'); return; }
+      const problem = { title, difficulty, timeLimit, memoryLimit, tags, description, inputFormat, outputFormat, samples, testCases, standardCode };
+      if (this.editingProblemId) {
+        DB.updateProblem(this.editingProblemId, problem);
+        UI.toast('题目更新成功');
+      } else {
+        problem.authorId = Auth.currentUser.id;
+        DB.createProblem(problem);
+        UI.toast('题目创建成功');
+      }
+      this.navigate('admin-problems');
+    } catch(e) {
+      UI.toast('保存失败：' + (e.message || '格式错误'), 'error');
+    }
+  },
+
+  updateProfile() {
+    const nickname = (document.getElementById('profile-nickname').value || '').trim();
+    const newPwd = document.getElementById('profile-new-pwd').value || '';
+    const data = DB.get();
+    const user = data.users.find(u => u.id === Auth.currentUser.id);
+    if (user) {
+      user.nickname = nickname || user.username;
+      if (newPwd) user.password = newPwd;
+      DB.set(data);
+      Auth.currentUser = user;
+      const nicknameEl = document.getElementById('user-nickname');
+      if (nicknameEl) nicknameEl.textContent = user.nickname;
+      UI.toast('资料更新成功');
+    }
+  },
+
+  exportData() {
+    try {
+      const blob = new Blob([DB.exportAll()], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'cpp_oj_backup_' + new Date().toISOString().split('T')[0] + '.json';
+      a.click();
+      URL.revokeObjectURL(url);
+      UI.toast('数据导出成功');
+    } catch(e) {
+      UI.toast('导出失败: ' + (e.message || '未知错误'), 'error');
+    }
+  },
+
+  importData(input) {
+    const file = input.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = e => {
+      if (DB.importAll(e.target.result)) {
+        UI.toast('数据导入成功，请重新登录');
+        setTimeout(() => { Auth.logout(); }, 1500);
+      } else {
+        UI.toast('导入失败：文件格式错误', 'error');
+      }
+    };
+    reader.readAsText(file);
+    input.value = '';
+  },
+
+  previewFile(fileId) {
+    const file = DB.getFiles().find(f => f.id === fileId);
+    if (!file || !file.isText) { UI.toast('该文件不支持预览', 'error'); return; }
+    const keywords = '\b(include|using|namespace|int|long|char|bool|float|double|void|return|if|else|for|while|do|break|continue|switch|case|default|struct|class|public|private|protected|template|typename|const|static|virtual|override|auto|new|delete|try|catch|throw|true|false|nullptr|this|sizeof|typedef|enum|union|inline|extern|register|volatile|goto|explicit|friend|operator|mutable)\b';
+    const builtins = '\b(cin|cout|endl|printf|scanf|main|vector|map|set|queue|stack|string|array|pair|tuple|sort|reverse|max|min|abs|swap|strlen|strcmp|strcpy|memcpy|memset|getline|push_back|pop_back|begin|end|size|length|empty|clear|find|insert|erase|count|lower_bound|upper_bound|next_permutation|prev_permutation|gcd|lcm|pow|sqrt|ceil|floor|round|sin|cos|tan|log|exp|rand|srand|time|clock|freopen|fopen|fclose|fprintf|fscanf|getchar|putchar|puts|gets|sscanf|sprintf|to_string|stoi|stoll|stod|stof|atoi|atol|atof|qsort|bsearch|malloc|free|realloc|calloc|exit|system)\b';
+    const types = '\b(string|vector|map|set|queue|stack|priority_queue|deque|list|unordered_map|unordered_set|bitset|istream|ostream|ifstream|ofstream|fstream|stringstream|complex|valarray|iterator|const_iterator|reverse_iterator|size_t|ptrdiff_t|nullptr_t|byte)\b';
+    let highlighted = Markdown.escapeHtml(file.textContent)
+      .replace(new RegExp(keywords, 'g'), '<span style="color:#c792ea;font-weight:600">$1</span>')
+      .replace(new RegExp(builtins, 'g'), '<span style="color:#82aaff">$1</span>')
+      .replace(new RegExp(types, 'g'), '<span style="color:#ffcb6b">$1</span>')
+      .replace(/(".*?")/g, '<span style="color:#c3e88d">$1</span>')
+      .replace(/('.*?')/g, '<span style="color:#f78c6c">$1</span>')
+      .replace(/(\/\/.*$)/gm, '<span style="color:#676e95;font-style:italic">$1</span>')
+      .replace(/(\/\*[\s\S]*?\*\/)/g, '<span style="color:#676e95;font-style:italic">$1</span>')
+      .replace(/(#\s*(?:include|define|ifdef|ifndef|endif|pragma|if|else|elif|undef|error|line)\b.*)/g, '<span style="color:#c792ea">$1</span>')
+      .replace(/\b(\d+(?:\.\d+)?)\b/g, '<span style="color:#f78c6c">$1</span>');
+    UI.openModal(`
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+        <h2 style="margin:0">⚙️ ${file.name}</h2>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-secondary btn-sm" onclick="App.copyFileCode(${file.id})">📋 复制代码</button>
+          <button class="btn btn-primary btn-sm" onclick="App.downloadFile(${file.id})">⬇️ 下载</button>
+        </div>
+      </div>
+      <div style="font-size:12px;color:var(--text2);margin-bottom:12px">${file.size} · ${file.lines} 行 · ${file.date}</div>
+      <div class="code-block" style="max-height:500px;overflow:auto;font-size:13px;line-height:1.6">${highlighted}</div>
+    `);
+  },
+
+  copyFileCode(fileId) {
+    const file = DB.getFiles().find(f => f.id === fileId);
+    if (!file || !file.isText) return;
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(file.textContent).then(() => {
+        UI.toast('📋 代码已复制到剪贴板');
+      }).catch(() => { App._fallbackCopy(file.textContent); });
+    } else { App._fallbackCopy(file.textContent); }
+  },
+
+  _fallbackCopy(text) {
+    const textarea = document.createElement('textarea');
+    textarea.value = text; textarea.style.position = 'fixed'; textarea.style.opacity = '0';
+    document.body.appendChild(textarea); textarea.select();
+    try { document.execCommand('copy'); UI.toast('📋 代码已复制到剪贴板'); }
+    catch(e) { UI.toast('复制失败', 'error'); }
+    document.body.removeChild(textarea);
+  },
+
+  showCreateTeam() {
+    if (!Auth.isAdmin()) { UI.toast('只有管理员可以创建战队', 'error'); return; }
+    const teams = DB.getTeams();
+    if (teams.length >= 3) { UI.toast('战队数量已达上限（最多3个）', 'error'); return; }
+    UI.openModal('<h2 style="margin-bottom:20px">🛡️ 创建战队</h2><div class="form-group2"><label>战队名称</label><input type="text" class="form-control2" id="team-name" placeholder="输入战队名称（2-20字）"></div><button class="btn btn-primary" onclick="App.createTeam()">✨ 创建</button>');
+  },
+
+  createTeam() {
+    const name = (document.getElementById('team-name').value || '').trim();
+    if (!name || name.length < 2 || name.length > 20) { UI.toast('战队名称需2-20字', 'error'); return; }
+    const result = DB.createTeam(name, Auth.currentUser.id);
+    if (!result.success) { UI.toast(result.message, 'error'); return; }
+    UI.closeModal(); UI.toast('战队「' + name + '」创建成功！'); this.navigate('teams');
+  },
+
+  joinTeam(teamId) {
+    const user = Auth.currentUser;
+    if (!user) { UI.toast('请先登录', 'error'); return; }
+    const result = DB.joinTeam(teamId, user.id);
+    if (!result.success) { UI.toast(result.message, 'error'); return; }
+    UI.toast('加入战队成功！'); this.navigate('teams');
+  },
+
+  leaveTeam() {
+    if (!confirm('确定要退出当前战队吗？')) return;
+    const result = DB.leaveTeam(Auth.currentUser.id);
+    if (!result.success) { UI.toast(result.message, 'error'); return; }
+    UI.toast('已退出战队'); this.navigate('teams');
+  },
+
+  deleteTeam(teamId) {
+    if (!Auth.isAdmin()) { UI.toast('权限不足', 'error'); return; }
+    if (!confirm('确定要解散该战队吗？此操作不可撤销。')) return;
+    DB.deleteTeam(teamId); UI.toast('战队已解散'); this.navigate('teams');
+  },
+
+  viewTeam(id) { this.currentTeamId = id; this.navigate('team-detail'); },
+
+  // ==================== 联赛系统 ====================
+  currentLeagueId: null,
+
+  viewLeague(id) {
+    this.currentLeagueId = id;
+    this.navigate('league-detail');
+  },
+
+  viewLeagueLeaderboard(id) {
+    this.currentLeagueId = id;
+    this.navigate('league-detail');
+    // 自动滚动到得分榜
+    setTimeout(() => {
+      const el = document.querySelector('.card .card-title');
+      if (el && el.textContent.includes('实时得分榜')) {
+        el.scrollIntoView({ behavior: 'smooth' });
+      }
+    }, 100);
+  },
+
+  registerLeague(leagueId) {
+    const user = Auth.currentUser;
+    if (!user) { UI.toast('请先登录', 'error'); return; }
+    const team = DB.getTeamByUserId(user.id);
+    if (!team) { UI.toast('您尚未加入任何战队', 'error'); return; }
+    const result = DB.registerForLeague(leagueId, user.id, team.id);
+    if (result.success) {
+      UI.toast('报名成功！', 'success');
+      this.navigate('league');
+    } else {
+      UI.toast(result.message, 'error');
+    }
+  },
+
+  solveLeagueProblem(leagueId, problemId) {
+    const league = DB.getLeagueById(leagueId);
+    if (!league || league.status !== 'ongoing') { UI.toast('比赛未在进行中', 'error'); return; }
+    const user = Auth.currentUser;
+    const isRegistered = league.registrations && league.registrations.some(r => r.userId === user.id);
+    if (!isRegistered) { UI.toast('您未报名该联赛', 'error'); return; }
+    App.currentProblemId = problemId;
+    App.currentLeagueId = leagueId;
+    this.navigate('problem-detail');
+    // 在题目详情页添加联赛标识
+    setTimeout(() => {
+      const panel = document.querySelector('.problem-panel:last-child');
+      if (panel) {
+        const badge = document.createElement('div');
+        badge.style.cssText = 'background:rgba(233,69,96,.1);border:1px solid rgba(233,69,96,.3);color:var(--accent);padding:8px 14px;border-radius:8px;margin-bottom:12px;font-size:13px;font-weight:600;';
+        badge.innerHTML = '🏆 联赛模式 · ' + league.name + ' · AC记100分';
+        panel.insertBefore(badge, panel.firstChild);
+      }
+    }, 100);
+  },
+
+  showCreateLeague() {
+    if (!Auth.isAdmin()) { UI.toast('权限不足', 'error'); return; }
+    const problems = DB.getProblems();
+    const now = new Date();
+    // 默认时间：明天开始报名，4天后比赛
+    const regStart = new Date(now); regStart.setDate(regStart.getDate() + 1);
+    const regEnd = new Date(now); regEnd.setDate(regEnd.getDate() + 3); regEnd.setHours(12, 0, 0, 0);
+    const startTime = new Date(now); startTime.setDate(startTime.getDate() + 4); startTime.setHours(0, 0, 1, 0);
+    const endTime = new Date(now); endTime.setDate(endTime.getDate() + 4); endTime.setHours(23, 59, 59, 0);
+
+    UI.openModal(`
+      <h2 style="margin-bottom:20px">🏅 创建联赛</h2>
+      <div class="form-group2"><label>联赛名称</label><input type="text" class="form-control2" id="league-name" placeholder="如：第1轮跨战队联赛"></div>
+      <div class="form-row">
+        <div class="form-group2"><label>报名开始时间</label><input type="datetime-local" class="form-control2" id="league-reg-start" value="${regStart.toISOString().slice(0,16)}"></div>
+        <div class="form-group2"><label>报名截止时间</label><input type="datetime-local" class="form-control2" id="league-reg-end" value="${regEnd.toISOString().slice(0,16)}"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group2"><label>比赛开始时间</label><input type="datetime-local" class="form-control2" id="league-start" value="${startTime.toISOString().slice(0,16)}"></div>
+        <div class="form-group2"><label>比赛结束时间</label><input type="datetime-local" class="form-control2" id="league-end" value="${endTime.toISOString().slice(0,16)}"></div>
+      </div>
+      <div class="form-group2"><label>选择题目（最多7题）</label>
+        <div style="max-height:200px;overflow-y:auto;border:1px solid var(--border);border-radius:12px;padding:12px;background:rgba(0,0,0,.2)">
+          ${problems.map(p => `<label style="display:flex;align-items:center;gap:8px;padding:6px 0;cursor:pointer;font-size:13px"><input type="checkbox" name="league-problems" value="${p.id}"><span class="difficulty diff-${p.difficulty}">${p.difficulty}</span> ${p.title}</label>`).join('')}
+        </div>
+      </div>
+      <button class="btn btn-primary" onclick="App.saveLeague()">✨ 创建联赛</button>
+    `);
+  },
+
+  saveLeague() {
+    const name = (document.getElementById('league-name').value || '').trim();
+    const regStart = document.getElementById('league-reg-start').value;
+    const regEnd = document.getElementById('league-reg-end').value;
+    const startTime = document.getElementById('league-start').value;
+    const endTime = document.getElementById('league-end').value;
+    const checked = document.querySelectorAll('input[name="league-problems"]:checked');
+    const problemIds = Array.from(checked).map(cb => parseInt(cb.value));
+
+    if (!name) { UI.toast('请输入联赛名称', 'error'); return; }
+    if (!regStart || !regEnd || !startTime || !endTime) { UI.toast('请填写完整时间', 'error'); return; }
+    if (problemIds.length === 0) { UI.toast('请至少选择1道题目', 'error'); return; }
+    if (problemIds.length > 7) { UI.toast('最多选择7道题目', 'error'); return; }
+    if (new Date(startTime) <= new Date(regEnd)) { UI.toast('比赛开始时间必须晚于报名截止时间', 'error'); return; }
+
+    DB.createLeague({ name, registrationStart: new Date(regStart).toISOString(), registrationEnd: new Date(regEnd).toISOString(), startTime: new Date(startTime).toISOString(), endTime: new Date(endTime).toISOString(), problemIds, createdBy: Auth.currentUser.id });
+    UI.closeModal();
+    UI.toast('联赛创建成功！');
+    this.navigate('admin-league');
+  },
+
+  editLeague(id) {
+    if (!Auth.isAdmin()) { UI.toast('权限不足', 'error'); return; }
+    const league = DB.getLeagueById(id);
+    if (!league) return;
+    const problems = DB.getProblems();
+    UI.openModal(`
+      <h2 style="margin-bottom:20px">🏅 编辑联赛</h2>
+      <div class="form-group2"><label>联赛名称</label><input type="text" class="form-control2" id="edit-league-name" value="${league.name}"></div>
+      <div class="form-row">
+        <div class="form-group2"><label>报名开始时间</label><input type="datetime-local" class="form-control2" id="edit-league-reg-start" value="${league.registrationStart ? league.registrationStart.slice(0,16) : ''}"></div>
+        <div class="form-group2"><label>报名截止时间</label><input type="datetime-local" class="form-control2" id="edit-league-reg-end" value="${league.registrationEnd ? league.registrationEnd.slice(0,16) : ''}"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group2"><label>比赛开始时间</label><input type="datetime-local" class="form-control2" id="edit-league-start" value="${league.startTime ? league.startTime.slice(0,16) : ''}"></div>
+        <div class="form-group2"><label>比赛结束时间</label><input type="datetime-local" class="form-control2" id="edit-league-end" value="${league.endTime ? league.endTime.slice(0,16) : ''}"></div>
+      </div>
+      <div class="form-group2"><label>选择题目（最多7题）</label>
+        <div style="max-height:200px;overflow-y:auto;border:1px solid var(--border);border-radius:12px;padding:12px;background:rgba(0,0,0,.2)">
+          ${problems.map(p => {
+            const checked = (league.problemIds || []).includes(p.id) ? 'checked' : '';
+            return `<label style="display:flex;align-items:center;gap:8px;padding:6px 0;cursor:pointer;font-size:13px"><input type="checkbox" name="edit-league-problems" value="${p.id}" ${checked}><span class="difficulty diff-${p.difficulty}">${p.difficulty}</span> ${p.title}</label>`;
+          }).join('')}
+        </div>
+      </div>
+      <button class="btn btn-primary" onclick="App.updateLeagueSave(${id})">💾 保存修改</button>
+    `);
+  },
+
+  updateLeagueSave(id) {
+    const name = (document.getElementById('edit-league-name').value || '').trim();
+    const regStart = document.getElementById('edit-league-reg-start').value;
+    const regEnd = document.getElementById('edit-league-reg-end').value;
+    const startTime = document.getElementById('edit-league-start').value;
+    const endTime = document.getElementById('edit-league-end').value;
+    const checked = document.querySelectorAll('input[name="edit-league-problems"]:checked');
+    const problemIds = Array.from(checked).map(cb => parseInt(cb.value));
+
+    if (!name) { UI.toast('请输入联赛名称', 'error'); return; }
+    if (problemIds.length === 0) { UI.toast('请至少选择1道题目', 'error'); return; }
+    if (problemIds.length > 7) { UI.toast('最多选择7道题目', 'error'); return; }
+
+    DB.updateLeague(id, { name, registrationStart: new Date(regStart).toISOString(), registrationEnd: new Date(regEnd).toISOString(), startTime: new Date(startTime).toISOString(), endTime: new Date(endTime).toISOString(), problemIds });
+    UI.closeModal();
+    UI.toast('联赛更新成功！');
+    this.navigate('admin-league');
+  },
+
+  deleteLeague(id) {
+    if (!Auth.isAdmin()) { UI.toast('权限不足', 'error'); return; }
+    if (!confirm('确定删除该联赛吗？此操作不可撤销。')) return;
+    DB.deleteLeague(id);
+    UI.toast('联赛已删除');
+    this.navigate('admin-league');
+  },
+
+  manageLeagueAnnouncements(id) {
+    if (!Auth.isAdmin()) { UI.toast('权限不足', 'error'); return; }
+    const league = DB.getLeagueById(id);
+    if (!league) return;
+    UI.openModal(`
+      <h2 style="margin-bottom:20px">📢 联赛公告 · ${league.name}</h2>
+      <div class="form-group2"><label>发布新公告</label><textarea class="form-textarea" id="announcement-content" placeholder="输入公告内容..."></textarea></div>
+      <button class="btn btn-primary" onclick="App.postAnnouncement(${id})" style="margin-bottom:20px">📢 发布公告</button>
+      <div style="max-height:300px;overflow-y:auto">
+        ${(league.announcements || []).slice().reverse().map(a => `
+          <div style="padding:10px 0;border-bottom:1px solid var(--border)">
+            <div style="font-size:13px">${a.content}</div>
+            <div style="font-size:11px;color:var(--text2);margin-top:4px">${new Date(a.time).toLocaleString()}</div>
+          </div>
+        `).join('') || '<div style="color:var(--text2);padding:10px 0">暂无公告</div>'}
+      </div>
+    `);
+  },
+
+  postAnnouncement(leagueId) {
+    const content = (document.getElementById('announcement-content').value || '').trim();
+    if (!content) { UI.toast('请输入公告内容', 'error'); return; }
+    DB.addLeagueAnnouncement(leagueId, content, Auth.currentUser.id);
+    UI.toast('公告发布成功！');
+    this.manageLeagueAnnouncements(leagueId);
+  },
+
+};
+
+// ==================== 初始化 ====================
+
+function checkTeamSystem() {
+  console.log('[Team] 检查战队系统...');
+  const seasonResult = DB.checkSeasonReset();
+  if (seasonResult.reset) {
+    console.log('[Team] 新赛季开始:', seasonResult.season);
+    UI.toast('🎉 新赛季「' + seasonResult.season + '」开始！战队积分已重置', 'info', 5000);
+  }
+  const leagueResult = DB.checkLeague();
+  if (leagueResult.triggered) {
+    console.log('[Team] 联赛已触发');
+    const topTeam = leagueResult.rankings[0];
+    UI.toast('🏆 跨战队联赛结束！冠军：' + (topTeam ? topTeam.teamName : '无'), 'success', 5000);
+  }
+  // 新版联赛状态检查
+  DB.checkLeagueStatus();
+  // 如果有进行中的联赛，启动实时榜刷新
+  const activeLeague = DB.getActiveLeague();
+  if (activeLeague) {
+    console.log('[League] 检测到进行中的联赛:', activeLeague.name);
+    // 启动倒计时刷新
+    setInterval(() => {
+      const el = document.getElementById('league-countdown');
+      if (el) {
+        const end = new Date(el.dataset.end);
+        const now = new Date();
+        const diff = end - now;
+        if (diff <= 0) { el.textContent = '已结束'; el.style.color = 'var(--text2)'; }
+        else {
+          const h = Math.floor(diff / 3600000);
+          const m = Math.floor((diff % 3600000) / 60000);
+          const s = Math.floor((diff % 60000) / 1000);
+          el.textContent = (h < 10 ? '0' : '') + h + ':' + (m < 10 ? '0' : '') + m + ':' + (s < 10 ? '0' : '') + s;
+        }
+      }
+    }, 1000);
+  }
+}
+
+document.addEventListener('DOMContentLoaded', async () => {
+  console.log('[System] ====== C++ OJ 笔记训练系统启动 ======');
+  // 强制重置密码框，防止浏览器自动填充覆盖默认值
+
+  await App.init();
+  checkTeamSystem();
+});
+</script>
+</body>
+</html>
